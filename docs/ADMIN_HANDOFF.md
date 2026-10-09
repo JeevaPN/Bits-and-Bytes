@@ -50,6 +50,7 @@ The current migration has an `admin_scopes` placeholder for department/area valu
 - Admin routes: `app/admin/`.
 - Admin-only components: `components/admin/`.
 - Admin request/status contracts: `lib/domain/admin.ts`.
+- Frozen cross-role API interface: `lib/contracts/v1.ts`; Admin mock adapter: `lib/mock-api/admin.ts`.
 - Example records: `lib/domain/admin-demo-data.ts`.
 - Database scope placeholder: `admin_scopes` in `supabase/migrations/202610100001_core.sql`.
 

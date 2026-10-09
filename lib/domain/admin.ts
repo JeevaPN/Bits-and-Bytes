@@ -26,6 +26,7 @@ export interface CoordinationCase {
   projectSlugs: string[];
   street: string;
   reason: string;
+  decisionReason?: string;
   status: CoordinationStatus;
   proposedDates?: string;
 }

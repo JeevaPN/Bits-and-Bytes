@@ -39,7 +39,7 @@ Groups must select work within their capabilities. Specialist or government-auth
 
 ## Frontend ownership and backend needs
 
-The group teammate owns `app/community-partners/` and `components/community-partners/` (create this folder for group-only components). Group/task shared types are `CommunityGroup`, `GroupTask`, and `GroupTaskStatus` in `lib/domain/types.ts`; demo records/ranking are in `lib/domain/demo-data.ts` and `lib/services/issues.ts`. Coordinate shared contracts, services, Supabase/RLS, global navigation, public sponsorship pages, and migrations with their owners.
+Vineel owns `app/community-partners/`, `components/community-partners/`, and `lib/mock-api/community-partners.ts`. Group/task shared types are `CommunityGroup`, `GroupTask`, and `GroupTaskStatus` in `lib/domain/types.ts`; the frozen `CommunityPartnersApi` interface is in `lib/contracts/v1.ts`. Demo records/ranking are in `lib/domain/demo-data.ts` and `lib/services/issues.ts`. Coordinate shared services, Supabase/RLS, global navigation, public sponsorship pages, and migrations with their owners.
 
 Before real group actions: implement group application and Admin decisions; authenticated membership and permissions; suitable opportunity queries and safety triage; atomic task acceptance; progress/completion event writes and evidence controls; independent confirmation that blocks group members; referral/reopen workflows; simulated-only campaign and pledge history; server and RLS authorization; and tests for cross-group edits, duplicate claims, self-confirmation, and task completion not closing official issues.
 

@@ -43,6 +43,13 @@ Bits-and-Bytes/
 │   │   └── types.ts             # Shared role/project/issue/group/task types
 │   ├── services/                # Business rules and demo service functions
 │   │   └── issues.ts            # Demo issue ranking/verification helper
+│   ├── contracts/v1.ts          # Frozen v1 role API interfaces and DTOs
+│   ├── mock-api/                # In-memory adapters matching frozen API
+│   │   ├── state.ts             # Shared seeded records for mock adapters
+│   │   ├── helpers.ts           # Result, pagination, and search helpers
+│   │   ├── admin.ts             # Jeeva-owned Admin API mock
+│   │   ├── community-partners.ts # Vineel-owned partner API mock
+│   │   └── neighbourhood.ts    # Shuvam-owned Neighbourhood API mock
 │   ├── validation/              # Zod input schemas
 │   │   └── issue.ts             # Issue-report field schema
 │   └── supabase/                # Browser/server Supabase client adapters
@@ -56,7 +63,8 @@ Bits-and-Bytes/
 │   ├── NEIGHBOURHOOD_HANDOFF.md # Neighbourhood jobs, screens, permissions, gaps
 │   ├── COMMUNITY_PARTNERS_HANDOFF.md # Partner jobs, screens, permissions, gaps
 │   ├── PROJECT_STRUCTURE.md     # This file: repository/file guide
-│   └── TEAM_WORKFLOW.md         # Ownership, branches, handoff, review steps
+│   ├── TEAM_WORKFLOW.md         # Four-person ownership and branch process
+│   └── TEAM_CONTRACTS.md        # Frozen APIs, mock semantics, integration rules
 ├── public/                      # Static assets served as-is (add as needed)
 ├── .env.example                 # Environment-variable names; no credentials
 ├── package.json                 # Dependencies and npm scripts
@@ -104,6 +112,12 @@ Bits-and-Bytes/
 | `lib/domain/demo-data.ts` | Sample projects, reports, and partners used by pages; not a seed script. |
 | `lib/domain/admin-demo-data.ts` | Admin-shaped sample projects/issues/cases/inspections/applications. |
 | `lib/services/issues.ts` | In-memory opportunity sorting and one-process demo verification helper. |
+| `lib/contracts/v1.ts` | Frozen request/response DTOs and API interfaces that feature branches share. |
+| `lib/mock-api/state.ts` | Stable shared demo records and temporary mutation state used by adapters. |
+| `lib/mock-api/helpers.ts` | Standard result envelope, pagination/search helpers, and explicit public mappers that strip admin-only fields. |
+| `lib/mock-api/admin.ts` | Mock implementation of the frozen Admin API; Jeeva owns it. |
+| `lib/mock-api/community-partners.ts` | Mock implementation of the frozen Community Partners API; Vineel owns it. |
+| `lib/mock-api/neighbourhood.ts` | Mock implementation of the frozen Neighbourhood API; Shuvam owns it. |
 | `lib/validation/issue.ts` | Zod validation constraints for report fields. |
 | `lib/supabase/browser.ts` | Creates browser Supabase client when env values exist. |
 | `lib/supabase/server.ts` | Creates cookie-aware server Supabase client when env values exist. |
@@ -116,6 +130,7 @@ Bits-and-Bytes/
 | `eslint.config.mjs` | ESLint Next.js and TypeScript rules. |
 | `.gitignore` | Prevents environment files, dependencies, and build output from being committed. |
 | `README.md` | Setup, environment, database, local checks, Vercel deployment, and scope. |
+| `docs/TEAM_CONTRACTS.md` | Frozen v1 contracts, stable cross-feature IDs, API methods, ownership, and merge plan. |
 
 ## Checklist coverage reality
 

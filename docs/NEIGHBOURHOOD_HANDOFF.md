@@ -38,7 +38,7 @@ Identity, private contact information, and original/private evidence should not 
 
 ## Frontend ownership and backend needs
 
-Neighbourhood owns `app/neighbourhood/` and `components/neighbourhood/`; coordinate public project/map/sponsorship pages with their respective feature owners. Shared contracts/schema/services are in `lib/domain/`, `lib/validation/`, and `lib/services/` and need coordination with the shared owner.
+Neighbourhood owns `app/neighbourhood/` and `components/neighbourhood/`; its API is the frozen `NeighbourhoodApi` in `lib/contracts/v1.ts`, implemented by `lib/mock-api/neighbourhood.ts`. Coordinate public project/map/sponsorship pages with their owners. Shared schema/services are in `lib/domain/`, `lib/validation/`, and `lib/services/` and need coordination with the shared owner.
 
 Before real actions: implement Auth and trusted profile provisioning; validated issue creation and safe private/public evidence storage; unique issue/user verification with rate controls; report flags as review signals; project follows/preferences; independent group confirmation checks; simulated-only pledge persistence; public read models without private identity/evidence; and tests for authorization and duplicate verification. Never claim a report, verification, follow, confirmation, or pledge was saved until the server confirms it.
 
