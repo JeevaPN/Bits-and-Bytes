@@ -43,4 +43,6 @@ Included: public landing, project and group pages, QR codes, report form with ph
 
 Still demo or incomplete: persistence and authentication, authorized Admin scopes, real server-side report/verification/review/task actions, file upload/storage, Leaflet basemap and geocoding, operational task and confirmation flow, live search/filter/follow, official API integrations, route suggestions, notifications, and real deployments. Detector data is not integrated. The D/P/A feature checklist in the project brief remains the product reference; the architecture documents identify initial integration limits.
 
+The agreed role-facing areas are **Admin**, **Neighbourhood**, and **Community Partners**. See [the full project structure guide](docs/PROJECT_STRUCTURE.md) and the role handoffs in `docs/` before dividing frontend work. New routes use `/neighbourhood` and `/community-partners`; legacy `/people` and `/groups` links redirect to them.
+
 After configuring Supabase, implement Auth provisioning and ownership-aware server handlers, then replace fixtures with typed queries. Ensure verified issue counts, official review, group completion, independent confirmation, project completion, and restoration inspections remain distinct throughout.

@@ -9,7 +9,7 @@ The migration `supabase/migrations/202610100001_core.sql` defines the initial Po
 | `street_segments`, `projects`, `project_segments` | Persistent street identity, official public works, and many-to-many affected roads. Projects preserve original and revised expected dates. Geometry uses PostGIS geography. |
 | `project_events`, `coordination_cases` | Append-only project timeline and explicit conflict reasoning/decisions for Dig-Once coordination. |
 | `issues`, `issue_verifications`, `issue_project_matches`, `official_reviews` | Citizen/external/detector observations, unique per-user verification, separate suggested/reviewed project links, and decision history. Reporter identity is not a public column in page view models. |
-| `group_tasks`, `group_task_events`, `group_task_confirmations` | Separate group work lifecycle and actor history; confirmations require Common People and are independent of official review. |
+| `group_tasks`, `group_task_events`, `group_task_confirmations` | Separate group work lifecycle and actor history; confirmations require Neighbourhood and are independent of official review. |
 | `sponsorship_campaigns`, `sponsorship_pledges` | Group campaigns and pledges constrained to simulated records. |
 | `project_follows` | Optional unique user/project follow. |
 

@@ -1,0 +1,10 @@
+import Link from "next/link";
+import { adminProjects } from "@/lib/domain/admin-demo-data";
+import { SectionHeading } from "@/components/admin/section-heading";
+import { StatusBadge } from "@/components/admin/status-badge";
+
+export default function AdminProjects() { return <section>
+  <SectionHeading eyebrow="Project management" title="Public works projects" description="Review the project register, publication state, schedules, locations, and closure notes." action={<Link href="/admin/projects/new" className="button">＋ New project</Link>} />
+  <div className="card" style={{ overflowX: "auto", padding: 0 }}><table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}><thead><tr>{["Project", "Department · ward", "Schedule", "Status", "Public page"].map((heading) => <th key={heading} style={{ textAlign: "left", padding: 14, borderBottom: "1px solid var(--line)", color: "var(--muted)", fontSize: 12 }}>{heading}</th>)}</tr></thead><tbody>{adminProjects.map((project) => <tr key={project.id}><td style={{ padding: 14, borderBottom: "1px solid var(--line)" }}><strong>{project.title}</strong><div style={{ color: "var(--muted)", fontSize: 13 }}>{project.location}</div></td><td style={{ padding: 14, borderBottom: "1px solid var(--line)" }}>{project.department}<div style={{ color: "var(--muted)", fontSize: 13 }}>{project.ward}</div></td><td style={{ padding: 14, borderBottom: "1px solid var(--line)" }}>{project.startDate} → {project.expectedEndDate}{project.originalExpectedEndDate !== project.expectedEndDate && <div style={{ color: "#966118", fontSize: 12 }}>Originally {project.originalExpectedEndDate}</div>}</td><td style={{ padding: 14, borderBottom: "1px solid var(--line)" }}><StatusBadge status={project.status}/></td><td style={{ padding: 14, borderBottom: "1px solid var(--line)" }}>{project.published ? <Link href={`/projects/${project.slug}`} style={{ color: "var(--green)" }}>Open ↗</Link> : "Draft"}</td></tr>)}</tbody></table></div>
+  <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 14 }}>Demo table · filters, edit actions, milestones, history, and persistence are pending integration.</p>
+</section>; }

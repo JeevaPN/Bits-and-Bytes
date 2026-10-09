@@ -1,2 +1,0 @@
-import { ReportForm } from "@/components/people/report-form";
-export default function ReportPage(){return <main className="container" style={{maxWidth:760,paddingTop:42}}><div className="eyebrow">Common People · new report</div><h1>Tell us what you noticed</h1><p style={{color:"var(--muted)",lineHeight:1.6}}>Share a public-space issue with your neighbours. Reports are demo-only until Supabase is configured. Please report something you observed; a community count does not confirm its accuracy.</p><div className="card" style={{marginTop:24}}><ReportForm/></div></main>}

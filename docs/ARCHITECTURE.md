@@ -19,7 +19,7 @@ flowchart TD
 
 ## Layer responsibilities
 
-- **Browser UI (`app/`, `components/`)** renders public pages, forms, maps, and separate Admin, Common People, and Social Service Group workspaces. UI role checks improve clarity but never grant permission.
+- **Browser UI (`app/`, `components/`)** renders public pages, forms, maps, and separate Admin, Neighbourhood, and Community Partner workspaces. UI role checks improve clarity but never grant permission.
 - **Next.js routes and layouts** provide stable public URLs and route-specific navigation. Protected routes load identity on the server.
 - **Server Actions/Route Handlers** are the trust boundary for writes: authenticate, authorize, validate, rate-limit, and call a domain service. No service-role credential belongs in browser code.
 - **Domain (`lib/domain`, `lib/services`, `lib/validation`)** owns shared status vocabulary and business rules. Issue verification, official review, group task completion, community confirmation, project completion, and restoration approval remain separate decisions.
@@ -28,9 +28,9 @@ flowchart TD
 
 ## Roles and data flows
 
-The only primary roles are `admin`, `common`, and `group`. Sponsors use Common People accounts. Pending group applications cannot accept work; only approved group members can manage group activity. Admin scopes constrain government actions by department or geography. Public reads expose published project/group information, public issue fields, and counts without reporter identity. Official review history is private to authorized staff; publish only appropriate public responses.
+The only primary roles are `admin`, `common`, and `group`. Sponsors use Neighbourhood accounts. Pending group applications cannot accept work; only approved group members can manage group activity. Admin scopes constrain government actions by department or geography. Public reads expose published project/group information, public issue fields, and counts without reporter identity. Official review history is private to authorized staff; publish only appropriate public responses.
 
-Common People submit observations and may personally verify an issue once. A count expresses independent community observations, never truth. Admins review the issue, its evidence, duplicate suggestions, and project matches as separate decisions. Approved groups may take suitable work and publish progress/completion evidence. Eligible Common People separately confirm or dispute a group completion claim. No group action closes an official issue; no project completion closes unrelated issues.
+Neighbourhood submit observations and may personally verify an issue once. A count expresses independent community observations, never truth. Admins review the issue, its evidence, duplicate suggestions, and project matches as separate decisions. Approved groups may take suitable work and publish progress/completion evidence. Eligible Neighbourhood separately confirm or dispute a group completion claim. No group action closes an official issue; no project completion closes unrelated issues.
 
 ## Integrations and limits
 
@@ -38,4 +38,4 @@ Supabase is the system of record. OpenStreetMap is an optional basemap; show att
 
 ## Parallel work
 
-Shared types, status names, schemas, service signatures, layouts, migrations, and Supabase clients are owned centrally. Teammate 1 owns `app/admin/` and `components/admin/`; teammate 2 owns public/Common People routes and `components/people/`; teammate 3 owns `app/groups/` and `components/groups/`. Coordinate shared API changes first, use separate branches, and avoid simultaneous edits to migration or global layout files.
+Shared types, status names, schemas, service signatures, layouts, migrations, and Supabase clients are owned centrally. Teammate 1 owns `app/admin/` and `components/admin/`; teammate 2 owns public/Neighbourhood routes and `components/neighbourhood/`; teammate 3 owns `app/community-partners/` and `components/community-partners/`. Coordinate shared API changes first, use separate branches, and avoid simultaneous edits to migration or global layout files.

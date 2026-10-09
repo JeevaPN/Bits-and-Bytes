@@ -1,0 +1,3 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+export default function CommunityPartnersLayout({ children }: { children: ReactNode }) { return <><nav aria-label="Community Partners navigation" className="container" style={{ display: "flex", gap: 8, paddingTop: 15 }}><Link className="navlink" href="/community-partners">Partner directory</Link><Link className="navlink" href="/community-partners/dashboard">Find suitable work</Link><Link className="navlink" href="/community-partners/dashboard/tasks">Work board</Link><Link className="navlink" href="/sponsorship">Sponsorship</Link></nav>{children}</>; }
