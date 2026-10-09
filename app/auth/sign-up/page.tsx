@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { SignUpForm } from "@/components/auth/auth-forms";
+export default function SignUpPage() { return <main className="container" style={{ maxWidth: 520, paddingTop: 48 }}><div className="eyebrow">CivicSync account</div><h1>Create your account</h1><p style={{ color: "var(--muted)" }}>Your account starts as a Common People account. Privileged roles cannot be selected during signup.</p><div className="card"><SignUpForm /></div><p>Already registered? <Link href="/auth/sign-in" style={{ color: "var(--green)" }}>Sign in</Link></p></main>; }

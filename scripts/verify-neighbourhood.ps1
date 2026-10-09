@@ -14,5 +14,12 @@ Invoke-Checked "npm" @("run", "test")
 Write-Host "3/4 Lint"
 Invoke-Checked "npm" @("run", "lint")
 Write-Host "4/4 Production build"
-Invoke-Checked "npm" @("run", "build")
+if (Test-Path ".next") { Remove-Item -LiteralPath ".next" -Recurse -Force }
+try {
+  Invoke-Checked "npm" @("run", "build")
+} catch {
+  Write-Warning "The first Next.js build attempt failed; cleaning generated output and retrying once."
+  if (Test-Path ".next") { Remove-Item -LiteralPath ".next" -Recurse -Force }
+  Invoke-Checked "npm" @("run", "build")
+}
 Write-Host "Neighbourhood verification completed successfully."

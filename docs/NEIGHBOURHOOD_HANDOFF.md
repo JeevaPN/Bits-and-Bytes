@@ -104,3 +104,39 @@ The repository now includes `tests/neighbourhood-api.test.ts` with 10 Vitest wor
 
 Environment seams are documented for Supabase Auth/database, Resend notification delivery, and server-only Cloudinary signed media storage. Credentials are intentionally not committed, and blank service values do not disable the local mock tests.
 
+## Authentication, production services, and backend boundary update — 2026-10-10
+
+### Implemented
+
+- Supabase SSR session refresh in `middleware.ts`, plus server-side `getServerUser`, `requireServerUser`, profile lookup, and centralized role checks.
+- Auth routes: `/auth/sign-up`, `/auth/sign-in`, `/auth/check-email`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/callback`, and `/auth/confirm`.
+- Accessible server-action forms for signup, signin, signout, recovery, reset, and confirmation resend. Auth error messages avoid account enumeration.
+- Authenticated header state with signout; public pages remain accessible.
+- Supabase production service boundary in `lib/services/neighbourhood-server.ts` for public issue reads, authenticated issue creation, verification, challenges, follows, task confirmations, and simulated pledges.
+- API handlers under `app/api/neighbourhood/` for public issue reads, authenticated writes, verification, challenges, and signed evidence-upload authorization.
+- Cloudinary server-only signature generation in `lib/media/cloudinary.ts`; the API secret never enters client output. MIME type and 10 MB size validation are enforced before signing.
+- Resend server-only transactional seam in `lib/email/resend.ts`. Supabase Auth remains responsible for confirmation/recovery token generation; Resend should be configured as Supabase SMTP rather than duplicating auth email tokens.
+- Ordered migration `supabase/migrations/202610100002_auth_neighbourhood_hardening.sql` adds idempotent profile provisioning from `auth.users`, challenge persistence/RLS, a safe public issue view, and editor-only group profile updates.
+
+### Authentication configuration still required
+
+1. In Supabase Auth, set the local site URL to `http://localhost:3000` and add `/auth/callback` and `/auth/confirm` to the redirect allowlist. Set the production site URL and equivalent production redirects before deployment.
+2. Configure email confirmation and password recovery templates to point to the callback/confirmation routes.
+3. Verify a Resend sending domain, publish its SPF/DKIM/DMARC records, and configure Resend SMTP in Supabase Auth. `RESEND_API_KEY` is only for non-auth transactional mail and must remain server-only.
+4. Apply migrations in order, first `202610100001_core.sql`, then `202610100002_auth_neighbourhood_hardening.sql`, in a dedicated Supabase project. Do not run against production without review.
+5. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` only where a reviewed server operation requires it, `NEXT_PUBLIC_SITE_URL`, and the Cloudinary variables from `.env.example`. Never commit `.env.local`.
+6. Configure Cloudinary upload delivery/access rules for the `civicsync/evidence/<user-id>` folder. The signing endpoint authorizes a scoped upload, but report association and public evidence approval still require the production media workflow to be completed and reviewed.
+
+### Automated checks
+
+`tests/neighbourhood-api.test.ts` and `tests/auth-integrations.test.ts` now contain 13 passing unit/security-boundary tests. `scripts/verify-neighbourhood.ps1` runs typecheck, tests, lint, and a clean production build, and fails on any native command failure. Live Supabase RLS/Auth, Resend delivery, and Cloudinary upload tests were not run because no dedicated test project or service credentials were supplied.
+
+### Remaining coordination and blockers
+
+- The frozen v1 client contract has no actor argument or read-follow-state method. The production server functions derive actors from Supabase sessions, but integrating them into the frozen client adapter requires a coordinated adapter switch with Aditya.
+- Community Partners must render `TaskConfirmation` only for canonical tasks at `awaiting_confirmation` and pass the canonical task ID; production RLS now requires a common user who is not a member of the claiming group.
+- Admin must consume challenge records and preserve official review/resolution as a separate lifecycle.
+- The shared sponsorship/project routes must integrate the reusable production boundary rather than continue using local fixture state.
+- Cloudinary upload completion/cleanup and safe public transformation approval are not yet persisted to an issue because the frozen `CreateIssueInput` has no evidence-reference field; this is a documented contract/integration dependency, not a fabricated upload success.
+- No CI workflow currently exists in the repository; CI setup remains an integration-owner task.
+

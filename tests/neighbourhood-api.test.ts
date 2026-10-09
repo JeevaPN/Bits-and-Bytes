@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { getNeighbourhoodDemoActor, isNeighbourhoodDemoProjectFollowed, neighbourhoodMockApi, setNeighbourhoodDemoActor } from "@/lib/mock-api/neighbourhood";
+import { getNeighbourhoodDemoActor, getNeighbourhoodDemoConfirmation, isNeighbourhoodDemoProjectFollowed, neighbourhoodMockApi, setNeighbourhoodDemoActor, setNeighbourhoodDemoTaskStatus } from "@/lib/mock-api/neighbourhood";
 
 describe("Neighbourhood adapter: reporting and public issue trust", () => {
   it("creates a canonical issue visible in a later list read", async () => {
@@ -80,11 +80,13 @@ describe("Neighbourhood adapter: actor-aware actions", () => {
 describe("Neighbourhood adapter: task confirmation and sponsorship", () => {
   it("requires a reason for a dispute and does not overwrite task lifecycle status", async () => {
     setNeighbourhoodDemoActor(`task-dispute-${Date.now()}`);
+    setNeighbourhoodDemoTaskStatus("task-demo-001", "awaiting_confirmation");
     const invalid = await neighbourhoodMockApi.confirmGroupTask({ taskId: "task-demo-001", decision: "disputed", reason: "" });
     expect(invalid).toMatchObject({ ok: false, error: { code: "VALIDATION" } });
     const valid = await neighbourhoodMockApi.confirmGroupTask({ taskId: "task-demo-001", decision: "disputed", reason: "The claimed cleanup is incomplete." });
     expect(valid.ok).toBe(true);
-    expect(valid.ok && valid.data.status).toBe("in_progress");
+    expect(valid.ok && valid.data.status).toBe("awaiting_confirmation");
+    expect(getNeighbourhoodDemoConfirmation("task-demo-001")).toMatchObject({ decision: "disputed" });
   });
 
   it("rejects non-positive simulated pledges and accepts positive demo pledges", async () => {

@@ -10,11 +10,14 @@ let demoActorId = "demo-resident-001";
 const demoVerifications = new Set<string>();
 const demoFollows = new Set<string>();
 const demoConfirmations = new Set<string>();
+const demoConfirmationRows = new Map<string, { decision: "confirmed" | "disputed"; reason?: string }>();
 export function setNeighbourhoodDemoActor(actorId: string) {
   if (actorId.trim()) demoActorId = actorId.trim();
 }
 export function getNeighbourhoodDemoActor() { return demoActorId; }
 export function isNeighbourhoodDemoProjectFollowed(projectId: string) { return demoFollows.has(`${demoActorId}:${projectId}`); }
+export function setNeighbourhoodDemoTaskStatus(taskId: string, status: "adopted" | "in_progress" | "awaiting_confirmation" | "confirmed" | "disputed" | "reopened" | "referred") { const task = taskRows.find((item) => item.id === taskId); if (task) task.status = status; }
+export function getNeighbourhoodDemoConfirmation(taskId: string) { return demoConfirmationRows.get(`${demoActorId}:${taskId}`); }
 
 export const neighbourhoodMockApi: NeighbourhoodApi = {
   async listProjects(query = {}) {
@@ -37,7 +40,7 @@ export const neighbourhoodMockApi: NeighbourhoodApi = {
   async verifyIssue(issueId) { const row = issueRows.find((item) => item.id === issueId); if (!row) return fail("NOT_FOUND", "Issue not found."); const key = `${demoActorId}:${issueId}`; if (demoVerifications.has(key)) return fail("CONFLICT", "This demo resident has already verified this issue."); demoVerifications.add(key); row.verificationCount += 1; return ok({ verificationCount: row.verificationCount }); },
   async flagIssue(input) { if (!issueRows.some((row) => row.id === input.issueId)) return fail("NOT_FOUND", "Issue not found."); if (!input.reason.trim()) return fail("VALIDATION", "A reason is required."); const id = `flag-mock-${Date.now()}`; issueFlagRows.push({ id, ...input }); return ok({ flagId: id }); },
   async setProjectFollow(projectId, following) { if (!projectRows.some((row) => row.id === projectId)) return fail("NOT_FOUND", "Project not found."); const key = `${demoActorId}:${projectId}`; if (following) demoFollows.add(key); else demoFollows.delete(key); return ok({ following: demoFollows.has(key) }); },
-  async confirmGroupTask(input) { const task = taskRows.find((row) => row.id === input.taskId); if (!task) return fail("NOT_FOUND", "Group task not found."); if (task.status !== "awaiting_confirmation" && task.status !== "in_progress") return fail("CONFLICT", "The task is not available for community confirmation."); if (input.decision === "disputed" && !input.reason?.trim()) return fail("VALIDATION", "A reason is required when disputing completion."); const key = `${demoActorId}:${input.taskId}`; if (demoConfirmations.has(key)) return fail("CONFLICT", "This demo resident has already responded to this task."); demoConfirmations.add(key); task.confirmationCount += 1; return ok(task); },
+  async confirmGroupTask(input) { const task = taskRows.find((row) => row.id === input.taskId); if (!task) return fail("NOT_FOUND", "Group task not found."); if (task.status !== "awaiting_confirmation") return fail("CONFLICT", "The task is not awaiting community confirmation."); if (input.decision === "disputed" && !input.reason?.trim()) return fail("VALIDATION", "A reason is required when disputing completion."); const key = `${demoActorId}:${input.taskId}`; if (demoConfirmations.has(key)) return fail("CONFLICT", "This demo resident has already responded to this task."); demoConfirmations.add(key); demoConfirmationRows.set(key, { decision: input.decision, reason: input.reason }); task.confirmationCount += 1; return ok(task); },
   async createSimulatedPledge(input) { if (!campaignRows.some((row) => row.id === input.campaignId)) return fail("NOT_FOUND", "Campaign not found."); if (!Number.isFinite(input.amount) || input.amount <= 0) return fail("VALIDATION", "Pledge amount must be a positive number."); const id = `pledge-mock-${Date.now()}`; pledgeRows.push({ id, campaignId: input.campaignId, amount: input.amount, simulated: true }); return ok({ pledgeId: id, simulated: true }); },
 };
 
