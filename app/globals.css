@@ -9,6 +9,13 @@
   --text-secondary: #64748B;
   --accent: #0EA5E9;
   --border: #E2E8F0;
+  /* Compatibility aliases for existing role-owned components. */
+  --paper: var(--bg-base);
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --green: var(--accent);
+  --line: var(--border);
+  --lime: #D9EDBB;
 }
 
 .dark {
@@ -19,6 +26,12 @@
   --text-secondary: #94A3B8;
   --accent: #38BDF8;
   --border: #334155;
+  --paper: var(--bg-base);
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --green: var(--accent);
+  --line: var(--border);
+  --lime: #365314;
 }
 
 * {

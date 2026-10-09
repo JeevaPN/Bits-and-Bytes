@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { createIssueForCurrentUser, listPublicIssues } from "@/lib/services/neighbourhood-server";
+export async function GET(request: Request) { const url = new URL(request.url); const result = await listPublicIssues({ q: url.searchParams.get("q") || undefined, category: url.searchParams.get("category") || undefined, page: Number(url.searchParams.get("page") || 1), pageSize: Number(url.searchParams.get("pageSize") || 20) }); return NextResponse.json(result, { status: result.ok ? 200 : 503 }); }
+export async function POST(request: Request) { let body: unknown; try { body = await request.json(); } catch { return NextResponse.json({ ok: false, error: { code: "VALIDATION", message: "Invalid JSON request." } }, { status: 400 }); } const result = await createIssueForCurrentUser(body as never); return NextResponse.json(result, { status: result.ok ? 201 : result.error.code === "FORBIDDEN" ? 401 : 400 }); }

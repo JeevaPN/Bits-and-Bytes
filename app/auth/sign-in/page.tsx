@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { SignInForm } from "@/components/auth/auth-forms";
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) { const { next } = await searchParams; return <main className="container" style={{ maxWidth: 520, paddingTop: 48 }}><div className="eyebrow">CivicSync account</div><h1>Sign in</h1><p style={{ color: "var(--muted)" }}>Use your Common People account for protected resident actions.</p><div className="card"><SignInForm next={next || "/neighbourhood"} /></div><p><Link href="/auth/forgot-password" style={{ color: "var(--green)" }}>Forgot password?</Link> · <Link href="/auth/sign-up" style={{ color: "var(--green)" }}>Create an account</Link></p></main>; }

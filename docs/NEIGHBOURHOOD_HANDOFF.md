@@ -52,3 +52,91 @@ Before real actions: implement Auth and trusted profile provisioning; validated 
 6. Add independent group-work confirmation on the public task detail.
 7. Complete group work history and simulated campaign/pledge detail.
 
+## Implementation update — 2026-10-10
+
+### Completed in the Neighbourhood boundary
+
+The Neighbourhood UI now uses `neighbourhoodMockApi` for dashboard reads and resident mutations. These flows are implemented against the frozen v1 adapter and remain explicitly demo-only:
+
+| Workflow | Files / API methods | Lifecycle and evidence |
+|---|---|---|
+| Dashboard and issue browsing | `components/neighbourhood/dashboard.tsx`, `issue-browser.tsx`; `listProjects`, `listIssues` | Public works and issue observation/review stay separate; search uses the API. |
+| Citizen reporting | `report-form.tsx`; `createIssue` | Required coordinates, schema validation, pending/error/success states, and created-ID link. |
+| Issue details, verification, challenge | `issue-detail.tsx`, `/neighbourhood/issues/[id]`; `getIssue`, `verifyIssue`, `flagIssue` | Public DTO only, not-found state, actor-aware duplicate guard, and no automatic review/resolution. |
+| Project follow | `project-follow.tsx`; `setProjectFollow` | Resident-specific state with pending/error feedback; no false notification claim. |
+| Approved group discovery | `group-directory.tsx`, `/neighbourhood/groups`; `listPartners` | Only approved public profiles are returned and rendered. |
+| Task confirmation and simulated pledge integration | `task-confirmation.tsx`, `simulated-pledge.tsx`; `confirmGroupTask`, `createSimulatedPledge` | Confirmation, official resolution, restoration, and payment remain distinct. |
+
+### Changed files
+
+Changed Neighbourhood routes/components are listed above. `lib/mock-api/neighbourhood.ts` now validates location-bearing creates, records demo verification/follow/confirmation state per explicit demo actor, prevents duplicate confirmation, and preserves task lifecycle status while recording confirmation count.
+
+### Identity and production boundary
+
+The v1 `NeighbourhoodApi` signatures do not accept an actor/session parameter. The adapter therefore exposes `setNeighbourhoodDemoActor()` for demo context only; production must derive identity from the trusted authenticated session on the server. The shared contract was not changed, and the mock is not an authorization system.
+
+### Feature traceability limitation
+
+The complete canonical CS-001–CS-253 checklist is not present in this repository. No feature IDs are invented here; full ID-level traceability is `blocked` pending that checklist. The implementation is traced to the frozen Neighbourhood responsibilities and API methods instead.
+
+### Verification performed
+
+- `npm install` — completed.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed with two pre-existing config warnings (`eslint.config.mjs`, `postcss.config.mjs`).
+- `npm run build` — passed; all 20 App Router pages generated.
+- No test runner exists in `package.json`, so automated unit/integration tests were not available to run.
+
+### Remaining blockers and integration steps
+
+- Supabase persistence, trusted authentication, server authorization/RLS, safe evidence upload, notifications, and real pledge persistence/payment remain outside this demo adapter.
+- The shared `/sponsorship` and public project routes should integrate `SimulatedPledge` and `ProjectFollow` with canonical IDs rather than duplicating fixture state.
+- Community Partners should render `TaskConfirmation` on the public completion-claim view, passing the canonical `GroupTask`; production must enforce authenticated resident and group-membership eligibility server-side.
+- The shared platform owner should provide session identity to the Neighbourhood server boundary without changing public DTOs. Admin must continue treating verification, flags, task confirmation, official review, and restoration as separate records.
+
+### Manual smoke test
+
+Run `npm run dev`, open `/neighbourhood`, search for `market`, open the issue, verify once, and confirm a second attempt is rejected. On `/neighbourhood/report`, submit valid coordinates and follow the created-report link; confirm the new issue appears through the same client-side demo adapter. Open `/neighbourhood/groups` and confirm only approved public profiles are shown.
+
+### Scripted backend-style verification
+
+The repository now includes `tests/neighbourhood-api.test.ts` with 10 Vitest workflow tests and `scripts/verify-neighbourhood.ps1`, exposed as `npm run verify:neighbourhood`. The script runs typecheck, adapter tests, lint, and production build. `scripts/setup-neighbourhood.ps1` and `npm run setup:neighbourhood` install dependencies and create `.env.local` from `.env.example` without overwriting an existing environment unless `-OverwriteEnv` is supplied.
+
+Environment seams are documented for Supabase Auth/database, Resend notification delivery, and server-only Cloudinary signed media storage. Credentials are intentionally not committed, and blank service values do not disable the local mock tests.
+
+## Authentication, production services, and backend boundary update — 2026-10-10
+
+### Implemented
+
+- Supabase SSR session refresh in `middleware.ts`, plus server-side `getServerUser`, `requireServerUser`, profile lookup, and centralized role checks.
+- Auth routes: `/auth/sign-up`, `/auth/sign-in`, `/auth/check-email`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/callback`, and `/auth/confirm`.
+- Accessible server-action forms for signup, signin, signout, recovery, reset, and confirmation resend. Auth error messages avoid account enumeration.
+- Authenticated header state with signout; public pages remain accessible.
+- Supabase production service boundary in `lib/services/neighbourhood-server.ts` for public issue reads, authenticated issue creation, verification, challenges, follows, task confirmations, and simulated pledges.
+- API handlers under `app/api/neighbourhood/` for public issue reads, authenticated writes, verification, challenges, and signed evidence-upload authorization.
+- Cloudinary server-only signature generation in `lib/media/cloudinary.ts`; the API secret never enters client output. MIME type and 10 MB size validation are enforced before signing.
+- Resend server-only transactional seam in `lib/email/resend.ts`. Supabase Auth remains responsible for confirmation/recovery token generation; Resend should be configured as Supabase SMTP rather than duplicating auth email tokens.
+- Ordered migration `supabase/migrations/202610100002_auth_neighbourhood_hardening.sql` adds idempotent profile provisioning from `auth.users`, challenge persistence/RLS, a safe public issue view, and editor-only group profile updates.
+
+### Authentication configuration still required
+
+1. In Supabase Auth, set the local site URL to `http://localhost:3000` and add `/auth/callback` and `/auth/confirm` to the redirect allowlist. Set the production site URL and equivalent production redirects before deployment.
+2. Configure email confirmation and password recovery templates to point to the callback/confirmation routes.
+3. Verify a Resend sending domain, publish its SPF/DKIM/DMARC records, and configure Resend SMTP in Supabase Auth. `RESEND_API_KEY` is only for non-auth transactional mail and must remain server-only.
+4. Apply migrations in order, first `202610100001_core.sql`, then `202610100002_auth_neighbourhood_hardening.sql`, in a dedicated Supabase project. Do not run against production without review.
+5. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` only where a reviewed server operation requires it, `NEXT_PUBLIC_SITE_URL`, and the Cloudinary variables from `.env.example`. Never commit `.env.local`.
+6. Configure Cloudinary upload delivery/access rules for the `civicsync/evidence/<user-id>` folder. The signing endpoint authorizes a scoped upload, but report association and public evidence approval still require the production media workflow to be completed and reviewed.
+
+### Automated checks
+
+`tests/neighbourhood-api.test.ts` and `tests/auth-integrations.test.ts` now contain 13 passing unit/security-boundary tests. `scripts/verify-neighbourhood.ps1` runs typecheck, tests, lint, and a clean production build, and fails on any native command failure. Live Supabase RLS/Auth, Resend delivery, and Cloudinary upload tests were not run because no dedicated test project or service credentials were supplied.
+
+### Remaining coordination and blockers
+
+- The frozen v1 client contract has no actor argument or read-follow-state method. The production server functions derive actors from Supabase sessions, but integrating them into the frozen client adapter requires a coordinated adapter switch with Aditya.
+- Community Partners must render `TaskConfirmation` only for canonical tasks at `awaiting_confirmation` and pass the canonical task ID; production RLS now requires a common user who is not a member of the claiming group.
+- Admin must consume challenge records and preserve official review/resolution as a separate lifecycle.
+- The shared sponsorship/project routes must integrate the reusable production boundary rather than continue using local fixture state.
+- Cloudinary upload completion/cleanup and safe public transformation approval are not yet persisted to an issue because the frozen `CreateIssueInput` has no evidence-reference field; this is a documented contract/integration dependency, not a fabricated upload success.
+- No CI workflow currently exists in the repository; CI setup remains an integration-owner task.
+
