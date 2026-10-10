@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AuthStatus } from "@/components/auth/auth-status";
+import { AuthProfileName, AuthStatus } from "@/components/auth/auth-status";
 import type { Role } from "@/lib/domain/types";
 import { canVisitPath } from "@/lib/auth/workspace-access";
 
@@ -72,6 +72,7 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
     <header className="site-header" style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
       <div className="container site-header-inner">
         <div className="site-header-left">
+          <AuthProfileName />
           <button
             className="site-menu-trigger"
             suppressHydrationWarning

@@ -1319,7 +1319,7 @@ html:has(.workspace-scroll-deck) {
 }
 
 .site-header-left {
-  gap: 14px;
+  gap: 12px;
 }
 
 .site-header-actions {
@@ -1350,6 +1350,10 @@ html:has(.workspace-scroll-deck) {
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.site-auth-profile-name {
+  max-width: 130px;
 }
 
 .site-sign-in-link {
@@ -1509,7 +1513,7 @@ html:has(.workspace-scroll-deck) {
   }
 
   .site-auth-user {
-    display: none;
+    max-width: 112px;
   }
 }
 
