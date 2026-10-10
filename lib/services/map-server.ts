@@ -27,13 +27,15 @@ export async function listPublicMapRecords(): Promise<ApiResult<PublicMapRecord[
   const issues = await client.from("public_issue_feed").select("id,title,location,review_status,source,urgent,latitude,longitude").limit(1000);
   if (issues.error) { logger.error("public issue map read model unavailable", { route: "/api/map", operation: "read_public_issue_feed", code: `${issues.error.code || "DATABASE_ERROR"}:${issues.error.message.slice(0, 180)}` }); return failure("Public issue map data is unavailable. Check the public_issue_feed view and PostgREST schema cache."); }
   const records: PublicMapRecord[] = [];
-  for (const row of projects.data ?? []) {
+  const projectRows = projects.data ?? [];
+  const issueRows = issues.data ?? [];
+  for (const row of projectRows) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);
     if (validCoordinate(latitude, longitude)) records.push({ kind: "project", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.status), href: `/projects/${row.slug}` });
   }
-  for (const row of issues.data ?? []) {
+  for (const row of issueRows) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);
     if (validCoordinate(latitude, longitude)) records.push({ kind: "issue", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.review_status), source: String(row.source), urgent: Boolean(row.urgent), href: `/neighbourhood/issues/${row.id}` });
   }
-  return { ok: true, data: records };
+  return { ok: true, data: records.sort((a, b) => a.title.localeCompare(b.title)) };
 }

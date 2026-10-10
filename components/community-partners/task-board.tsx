@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { communityPartnersApi, isCommunityPartnersDemo } from "@/lib/api/community-partners";
-import { groups as demoGroups } from "@/lib/domain/demo-data";
+import { communityPartnersApi } from "@/lib/api/community-partners";
 import {
   listCommunityPublishedTaskUpdates, listCommunityTaskDetails, listMyCommunityGroups, listPrivateCommunityTaskEvents,
   publishCommunityTaskUpdate, unpublishCommunityTaskUpdate, withdrawPartnerTaskCompletion,
@@ -10,7 +9,7 @@ import {
 import type { PartnerGroup, PartnerPrivateTaskEvent, PartnerPublishedTaskUpdate, PartnerTaskDetail } from "@/lib/supabase/community-partners";
 
 export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGroupId = "" }: { embedded?: boolean; refreshKey?: number; preferredGroupId?: string }) {
-  const [groups, setGroups] = useState<Array<PartnerGroup | (typeof demoGroups)[number]>>([]);
+  const [groups, setGroups] = useState<PartnerGroup[]>([]);
   const [groupId, setGroupId] = useState("");
   const [tasks, setTasks] = useState<PartnerTaskDetail[]>([]);
   const [events, setEvents] = useState<Record<string, PartnerPrivateTaskEvent[]>>({});
@@ -19,7 +18,7 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
   const [message, setMessage] = useState("Loading partner task board…");
 
   async function reloadTasks(id: string) {
-    if (!id || isCommunityPartnersDemo) { setTasks([]); return; }
+    if (!id) { setTasks([]); return; }
     const result = await listCommunityTaskDetails(id);
     if (!result.ok) { setMessage(result.error.message); return; }
     setTasks(result.data);
@@ -37,11 +36,6 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
   useEffect(() => {
     let active = true;
     void (async () => {
-      if (isCommunityPartnersDemo) {
-        const approved = demoGroups.filter((group) => group.approved);
-        setGroups(approved); setMessage("Demo mode: task changes are not persisted.");
-        return;
-      }
       const result = await listMyCommunityGroups();
       if (!active) return;
       if (!result.ok) { setMessage(result.error.message); return; }
@@ -99,7 +93,7 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
     {!!groups.length && <label className="label">Acting group<select className="field" value={groupId} onChange={(event) => { setGroupId(event.target.value); void reloadTasks(event.target.value); }}>
       {groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
     </select></label>}
-    {!!groups.length && !tasks.length && !isCommunityPartnersDemo && <p className="card">Your group has not taken on any issues yet. Choose a suitable listed issue to start.</p>}
+    {!!groups.length && !tasks.length && <p className="card">Your group has not taken on any issues yet. Choose a suitable listed issue to start.</p>}
     {tasks.map((task) => <article className="card" key={task.id} style={{ marginTop: 14 }}>
       <div className="eyebrow">{task.status.replaceAll("_", " ")} · {task.urgent ? "Urgent · " : ""}{task.category.replaceAll("_", " ")}</div>
       <h2>{task.title}</h2><p>{task.description}</p><p>📍 {task.location} · Official issue review: {task.reviewStatus}</p>

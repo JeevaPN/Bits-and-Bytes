@@ -3,7 +3,7 @@
 import { requireAdmin } from "@/lib/supabase/admin-auth";
 
 export async function createCoordinationCase(input: { title: string; projectIds: string[]; segmentIds: string[]; reason: string }): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (input.title.trim().length < 3 || input.reason.trim().length < 3 || input.projectIds.length === 0) return { ok: false, error: "Provide a title, at least one project, and a conflict reason." };
+  if (input.title.trim().length < 3 || input.reason.trim().length < 3 || input.projectIds.length === 0 || input.projectIds.some((id) => !/^[0-9a-f-]{36}$/i.test(id)) || input.segmentIds.some((id) => !/^[0-9a-f-]{36}$/i.test(id))) return { ok: false, error: "Provide a title, database project IDs, and a conflict reason." };
   let supabase;
   try { ({ supabase } = await requireAdmin()); } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "Admin session required." }; }
   const { error } = await supabase.rpc("admin_create_coordination", { case_title: input.title.trim(), linked_projects: input.projectIds, linked_segments: input.segmentIds, conflict_reason: input.reason.trim() });

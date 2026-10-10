@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { SignOutButton } from "@/components/auth/auth-forms";
 
@@ -25,7 +26,12 @@ function useAuthUser() {
 export function AuthProfileName() {
   const user = useAuthUser();
   if (!user) return null;
-  return <span className="site-auth-user site-auth-profile-name">{user.displayName || user.email}</span>;
+  return (
+    <span className="site-auth-profile-name">
+      <UserRound size={16} aria-hidden="true" />
+      <span className="site-auth-profile-label">{user.displayName || user.email}</span>
+    </span>
+  );
 }
 
 export function AuthStatus() {

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { communityPartnersApi, isCommunityPartnersDemo } from "@/lib/api/community-partners";
-import { groups as demoGroups } from "@/lib/domain/demo-data";
+import { communityPartnersApi } from "@/lib/api/community-partners";
 import { listMyCommunityGroups, listPartnerCampaigns, listPartnerCampaignUpdates } from "@/lib/supabase/community-partners";
 import type { PartnerGroup, PartnerCampaign, PartnerCampaignUpdate } from "@/lib/supabase/community-partners";
 
@@ -14,7 +13,7 @@ export default function CommunityPartnerCampaignsPage() {
   const [message, setMessage] = useState("Loading campaigns…");
 
   async function loadCampaigns(id: string) {
-    if (!id || isCommunityPartnersDemo) return;
+    if (!id) return;
     const result = await listPartnerCampaigns(id);
     if (!result.ok) { setMessage(result.error.message); return; }
     setCampaigns(result.data);
@@ -27,11 +26,6 @@ export default function CommunityPartnerCampaignsPage() {
   useEffect(() => {
     let active = true;
     void (async () => {
-      if (isCommunityPartnersDemo) {
-        const local = demoGroups.filter((group) => group.approved);
-        setGroups(local.map((group) => ({ ...group, approvalStatus: "approved" })));
-        setGroupId(local[0]?.id ?? ""); setMessage("Demo mode: campaign actions are simulated and not persisted."); return;
-      }
       const result = await listMyCommunityGroups();
       if (!active) return;
       if (!result.ok) { setMessage(result.error.message); return; }
@@ -50,7 +44,6 @@ export default function CommunityPartnerCampaignsPage() {
     const result = await communityPartnersApi.createCampaign({ groupId, title: String(form.get("title") ?? ""), purpose: String(form.get("purpose") ?? ""), targetAmount: Number(form.get("target")), activity: String(form.get("activity") ?? "") });
     setMessage(result.ok ? "Simulated campaign request saved." : result.error.message);
     if (result.ok) {
-      if (isCommunityPartnersDemo) setCampaigns((old) => [{ id: result.data.campaignId, groupId, title: String(form.get("title") ?? ""), purpose: String(form.get("purpose") ?? ""), targetAmount: Number(form.get("target")), activity: String(form.get("activity") ?? "") || undefined, status: "active", simulated: true }, ...old]);
       formElement.reset(); await loadCampaigns(groupId);
     }
   }
@@ -62,7 +55,6 @@ export default function CommunityPartnerCampaignsPage() {
     const result = await communityPartnersApi.reportCampaignUse({ campaignId, amount: Number(form.get("amount")), note: String(form.get("note") ?? ""), evidence });
     setMessage(result.ok ? "Simulated campaign use report saved." : result.error.message);
     if (result.ok) {
-      if (isCommunityPartnersDemo) setUpdates((old) => ({ ...old, [campaignId]: [{ id: result.data.updateId, campaignId, amount: Number(form.get("amount")), note: String(form.get("note") ?? ""), createdAt: new Date().toISOString() }, ...(old[campaignId] ?? [])] }));
       formElement.reset(); await loadCampaigns(groupId);
     }
   }
@@ -93,7 +85,7 @@ export default function CommunityPartnerCampaignsPage() {
         <h3>Use history</h3>{(updates[campaign.id] ?? []).map((update) => <div key={update.id}><p>{update.amount.toLocaleString()} · {update.note}</p>{update.evidenceUrl && <a href={update.evidenceUrl} target="_blank" rel="noreferrer">Open private evidence</a>}</div>)}
         {!updates[campaign.id]?.length && <p>No use reports yet.</p>}
       </article>)}
-      {!campaigns.length && !isCommunityPartnersDemo && <p className="card">No active campaigns for this group.</p>}
+      {!campaigns.length && <p className="card">No active campaigns for this group.</p>}
     </>}
   </main>;
 }

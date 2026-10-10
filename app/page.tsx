@@ -1,13 +1,20 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
-import { projects, issues, groups } from "@/lib/domain/demo-data";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
 import { WorkspacePageDeck } from "@/components/shared/workspace-page-deck";
 
 export default async function Home() {
   const role = await getCurrentWorkspaceRole();
   if (role) return <WorkspacePageDeck role={role} />;
+  const client = await createClient();
+  const [projectResult, issueResult, groupResult] = client ? await Promise.all([
+    client.from("projects").select("id,slug,title,department,location,status,expected_end").eq("is_published", true).order("updated_at", { ascending: false }).limit(3),
+    client.from("public_issue_feed").select("id", { count: "exact", head: true }),
+    client.from("public_community_groups").select("id", { count: "exact", head: true }),
+  ]) : [{ data: null, count: 0, error: null }, { data: null, count: 0, error: null }, { data: null, count: 0, error: null }];
+  const projects = projectResult.data ?? [];
 
   return (
     <main className="home-scroll-pages">
@@ -186,7 +193,7 @@ export default async function Home() {
               </p>
               <small style={{ color: "var(--text-secondary)" }}>
                 Expected{" "}
-                {new Date(p.expectedEndDate).toLocaleDateString("en-IN", {
+                {new Date(p.expected_end).toLocaleDateString("en-IN", {
                   month: "short",
                   year: "numeric",
                 })}
@@ -235,17 +242,17 @@ export default async function Home() {
       >
         <Stat
           icon={<MapPin size={20} />}
-          value={`${projects.length} demo projects`}
+          value={`${projects.length} featured projects`}
           label="See planned and ongoing public works"
         />
         <Stat
           icon={<ShieldCheck size={20} />}
-          value={`${issues.length} demo reports`}
+          value={`${issueResult.count ?? 0} public reports`}
           label="Community counts stay separate from official review"
         />
         <Stat
           icon={<Users size={20} />}
-          value={`${groups.length} approved groups`}
+          value={`${groupResult.count ?? 0} approved groups`}
           label="Local people working on local needs"
         />
       </section>

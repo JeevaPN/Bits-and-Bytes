@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Issue, CommunityGroup } from "@/lib/domain/types";
-import { groups as demoGroups } from "@/lib/domain/demo-data";
-import { communityPartnersApi, isCommunityPartnersDemo } from "@/lib/api/community-partners";
+import { communityPartnersApi } from "@/lib/api/community-partners";
 import {
   getCommunityGroupWorkCoverage, listMyCommunityGroups, listPublicCommunityGroups,
   referCommunityIssueTo, requestCommunityCollaboration,
@@ -32,7 +31,6 @@ export function CommunityPartnersDashboard({ embedded = false, onTaskAccepted }:
   async function loadGroup(id: string) {
     setGroupId(id);
     setAcceptedIssueIds([]);
-    if (isCommunityPartnersDemo) { setCoverage(null); return; }
     const result = await getCommunityGroupWorkCoverage(id);
     setCoverage(result.ok ? result.data : null);
   }
@@ -42,16 +40,15 @@ export function CommunityPartnersDashboard({ embedded = false, onTaskAccepted }:
     void (async () => {
       const [opportunities, groupResult, directory] = await Promise.all([
         communityPartnersApi.listOpportunities({ page: 1, pageSize: 100 }),
-        isCommunityPartnersDemo ? Promise.resolve(null) : listMyCommunityGroups(),
-        isCommunityPartnersDemo ? Promise.resolve(null) : listPublicCommunityGroups(),
+        listMyCommunityGroups(),
+        listPublicCommunityGroups(),
       ]);
       if (!active) return;
       if (opportunities.ok) setIssues(opportunities.data.items); else setMessage(opportunities.error.message);
-      const ownGroups = isCommunityPartnersDemo ? demoGroups.filter((group) => group.approved) : groupResult?.ok ? groupResult.data.filter((group) => group.approved) : [];
+      const ownGroups = groupResult?.ok ? groupResult.data.filter((group) => group.approved) : [];
       setGroups(ownGroups);
-      if (ownGroups.length) { setGroupId(ownGroups[0].id); if (!isCommunityPartnersDemo) await loadGroup(ownGroups[0].id); }
-      if (isCommunityPartnersDemo) setOtherGroups(demoGroups.filter((group) => group.approved));
-      else if (directory?.ok) setOtherGroups(directory.data.items);
+      if (ownGroups.length) { setGroupId(ownGroups[0].id); await loadGroup(ownGroups[0].id); }
+      if (directory?.ok) setOtherGroups(directory.data.items);
       const failure = !opportunities.ok ? opportunities.error.message : groupResult && !groupResult.ok ? groupResult.error.message : null;
       setMessage(failure ?? (ownGroups.length ? "" : "Register your social service group or join an existing group. Once approved, your group can take on listed issues and submit completed work."));
     })();

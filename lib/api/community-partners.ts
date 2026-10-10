@@ -1,7 +1,4 @@
 import { communityPartnersSupabaseApi } from "@/lib/supabase/community-partners";
 
-export const isCommunityPartnersDemo = false;
-
-// Production never writes to demo memory. Missing production configuration
-// selects the Supabase adapter, whose calls return UNAVAILABLE.
+// Community Partner actions always use the authenticated Supabase adapter.
 export const communityPartnersApi = communityPartnersSupabaseApi;

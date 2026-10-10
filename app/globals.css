@@ -172,11 +172,6 @@ body {
   font-weight: 700;
   letter-spacing: -0.075em;
   translate: 0 0;
-  transition: color 1s linear;
-}
-
-:root:not(.dark) .light-watermark.is-scattered .watermark-letter {
-  animation: watermark-letter-drift var(--drift-duration, 15s) linear infinite;
 }
 
 :root:not(.dark) .light-watermark-civic {
@@ -189,16 +184,6 @@ body {
   left: 55%;
 }
 
-.watermark-letter-1 { --step-a: 14vw -14vh; --step-b: 25vw 12vh; --step-c: -8vw 26vh; --step-d: -22vw 5vh; --drift-duration: 14s; }
-.watermark-letter-2 { --step-a: -12vw 16vh; --step-b: -25vw 20vh; --step-c: 16vw -13vh; --step-d: 24vw 7vh; --drift-duration: 15s; }
-.watermark-letter-3 { --step-a: 20vw 11vh; --step-b: 8vw -23vh; --step-c: -24vw -8vh; --step-d: -9vw 22vh; --drift-duration: 16s; }
-.watermark-letter-4 { --step-a: -19vw -17vh; --step-b: 12vw 23vh; --step-c: 27vw 9vh; --step-d: -15vw -12vh; --drift-duration: 14.5s; }
-.watermark-letter-5 { --step-a: 24vw -8vh; --step-b: -12vw -24vh; --step-c: -27vw 13vh; --step-d: 8vw 24vh; --drift-duration: 15.5s; }
-.watermark-letter-6 { --step-a: -23vw 12vh; --step-b: 15vw 24vh; --step-c: 27vw -11vh; --step-d: -13vw -20vh; --drift-duration: 14.2s; }
-.watermark-letter-7 { --step-a: 11vw -22vh; --step-b: 26vw 8vh; --step-c: -16vw 20vh; --step-d: -25vw -10vh; --drift-duration: 16s; }
-.watermark-letter-8 { --step-a: 25vw 18vh; --step-b: -10vw 25vh; --step-c: -27vw -14vh; --step-d: 17vw -21vh; --drift-duration: 14.8s; }
-.watermark-letter-9 { --step-a: -15vw -20vh; --step-b: -24vw 12vh; --step-c: 18vw 24vh; --step-d: 25vw -12vh; --drift-duration: 15.2s; }
-
 :root:not(.dark) .light-watermark-star {
   position: absolute;
   top: 48%;
@@ -208,54 +193,6 @@ body {
   background-color: rgba(15, 23, 42, 0.025);
   clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
   filter: drop-shadow(0 0 8px rgba(15, 23, 42, 0.025));
-  transition: background-color 1s linear;
-}
-
-:root:not(.dark) .light-watermark.is-scattered .light-watermark-star {
-  animation: star-drift 15s linear infinite;
-}
-
-:root:not(.dark) body:has(.card:hover) .light-watermark {
-  z-index: 10;
-}
-
-:root:not(.dark) body:has(.card:hover) .watermark-letter,
-:root:not(.dark) .light-watermark.is-returning .watermark-letter,
-:root:not(.dark) .light-watermark.is-aligned .watermark-letter {
-  color: rgba(15, 23, 42, 0.035);
-}
-
-:root:not(.dark) body:has(.card:hover) .light-watermark-star,
-:root:not(.dark) .light-watermark.is-returning .light-watermark-star,
-:root:not(.dark) .light-watermark.is-aligned .light-watermark-star {
-  background-color: rgba(15, 23, 42, 0.065);
-}
-
-:root:not(.dark) .light-watermark.is-returning,
-:root:not(.dark) .light-watermark.is-aligned {
-  z-index: 10;
-}
-
-@keyframes watermark-letter-drift {
-  0%, 100% { translate: 0 0; }
-  20% { translate: var(--step-a); }
-  40% { translate: var(--step-b); }
-  60% { translate: var(--step-c); }
-  80% { translate: var(--step-d); }
-}
-
-@keyframes star-drift {
-  0%, 100% { top: 48%; left: 52%; }
-  24% { top: 74%; left: 25%; }
-  50% { top: 21%; left: 11%; }
-  76% { top: 12%; left: 65%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root:not(.dark) .watermark-letter,
-  :root:not(.dark) .light-watermark-star {
-    animation: none;
-  }
 }
 
 a {
@@ -1319,7 +1256,7 @@ html:has(.workspace-scroll-deck) {
 }
 
 .site-header-left {
-  gap: 12px;
+  gap: 0;
 }
 
 .site-header-actions {
@@ -1353,7 +1290,30 @@ html:has(.workspace-scroll-deck) {
 }
 
 .site-auth-profile-name {
-  max-width: 130px;
+  display: inline-flex;
+  min-height: 42px;
+  max-width: 180px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-surface));
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.site-auth-profile-name > svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.site-auth-profile-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .site-sign-in-link {
@@ -1512,8 +1472,9 @@ html:has(.workspace-scroll-deck) {
     font-size: 12px;
   }
 
-  .site-auth-user {
-    max-width: 112px;
+  .site-auth-profile-name {
+    max-width: 150px;
+    padding-inline: 10px;
   }
 }
 
