@@ -1,6 +1,9 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+import { loadEffectiveEnvironment } from "../scripts/env-resolution.mjs";
 
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
@@ -73,5 +76,31 @@ describe("development lifecycle safety", () => {
     const scripts = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
     expect(scripts.scripts.dev).toBe("next dev");
     expect(scripts.scripts.dev).not.toMatch(/reset|seed|db push/i);
+  });
+
+  it("resolves remote project refs with process > .env.local > .env precedence", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "civicsync-env-"));
+    fs.writeFileSync(path.join(tempRoot, ".env"), "CIVICSYNC_REMOTE_PROJECT_REF=from-env\n");
+    fs.writeFileSync(path.join(tempRoot, ".env.local"), "CIVICSYNC_REMOTE_PROJECT_REF=from-local\n");
+    expect(loadEffectiveEnvironment(tempRoot, {} as unknown as NodeJS.ProcessEnv).CIVICSYNC_REMOTE_PROJECT_REF).toBe("from-local");
+    expect(loadEffectiveEnvironment(tempRoot, { CIVICSYNC_REMOTE_PROJECT_REF: "from-process" } as unknown as NodeJS.ProcessEnv).CIVICSYNC_REMOTE_PROJECT_REF).toBe("from-process");
+    expect(loadEffectiveEnvironment(tempRoot, {} as unknown as NodeJS.ProcessEnv).CIVICSYNC_REMOTE_TARGET).toBeUndefined();
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+
+  it("rejects missing and mismatched refs before hosted CLI operations", () => {
+    const preflight = read("scripts/dev-preflight.mjs");
+    const cli = read("scripts/dev-setup.ps1");
+    expect(preflight).toContain("const expectedRef = values.CIVICSYNC_REMOTE_PROJECT_REF");
+    expect(cli.indexOf("node scripts/dev-preflight.mjs --allow-hosted")).toBeLessThan(cli.indexOf("npx.cmd --no-install supabase --version"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "civicsync-preflight-"));
+    fs.writeFileSync(path.join(tempRoot, ".env"), "NEXT_PUBLIC_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\nNEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder\n");
+    const missing = spawnSync(process.execPath, ["scripts/dev-preflight.mjs", "--allow-hosted"], { cwd: root, env: { ...process.env, CIVICSYNC_ENV_ROOT: tempRoot, CIVICSYNC_REMOTE_PROJECT_REF: "" }, encoding: "utf8" });
+    const mismatch = spawnSync(process.execPath, ["scripts/dev-preflight.mjs", "--allow-hosted"], { cwd: root, env: { ...process.env, CIVICSYNC_ENV_ROOT: tempRoot, CIVICSYNC_REMOTE_PROJECT_REF: "wrong-project-ref" }, encoding: "utf8" });
+    expect(missing.status).toBe(3);
+    expect(mismatch.status).toBe(3);
+    expect(`${missing.stdout}${missing.stderr}`).toContain("requires CIVICSYNC_REMOTE_PROJECT_REF");
+    expect(`${mismatch.stdout}${mismatch.stderr}`).toContain("does not match");
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   });
 });

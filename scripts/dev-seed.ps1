@@ -1,6 +1,8 @@
 param([ValidateSet('local','remote-dev')][string]$Target = 'local')
 $ErrorActionPreference = 'Stop'
 $env:SUPABASE_TELEMETRY_DISABLED = '1'
+. ./scripts/import-env.ps1
+Import-CivicSyncEnvironment
 & powershell -ExecutionPolicy Bypass -File ./scripts/ensure-project-deps.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Project dependency installation failed.' }
 & npx.cmd --no-install supabase --version

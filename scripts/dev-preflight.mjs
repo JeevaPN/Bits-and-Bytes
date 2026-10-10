@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-const root = process.cwd();
-const files = [".env.local", ".env"];
+import { detectedEnvironmentFiles, loadEffectiveEnvironment } from "./env-resolution.mjs";
+const root = process.env.CIVICSYNC_ENV_ROOT || process.cwd();
+const files = detectedEnvironmentFiles(root);
 const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 const optional = ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_OSM_TILE_URL", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET", "RESEND_API_KEY", "RESEND_FROM_EMAIL"];
-const values = {};
-for (const file of files) { const full = path.join(root, file); if (!fs.existsSync(full)) continue; for (const line of fs.readFileSync(full, "utf8").split(/\r?\n/)) { const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/); if (match && values[match[1]] === undefined) values[match[1]] = match[2].replace(/^['"]|['"]$/g, ""); } }
+const values = loadEffectiveEnvironment(root);
 const missing = required.filter((name) => !values[name]);
 const malformed = [];
 const nodeMajor = Number(process.versions.node.split(".")[0]);
@@ -21,7 +21,7 @@ const local = /^https?:\/\/(127\.0\.0\.1|localhost)/.test(values.NEXT_PUBLIC_SUP
 console.log(`Database mode: ${local ? "local Supabase URL" : "hosted Supabase URL (non-destructive mode)"}`);
 if (!local && !process.argv.includes("--allow-hosted")) { console.error("Hosted Supabase URL detected. Select an explicitly classified remote-dev target instead of running local setup against hosted configuration."); process.exit(3); }
 if (!local && process.argv.includes("--allow-hosted")) {
-  const expectedRef = process.env.CIVICSYNC_REMOTE_PROJECT_REF;
+  const expectedRef = values.CIVICSYNC_REMOTE_PROJECT_REF;
   const hostname = new URL(values.NEXT_PUBLIC_SUPABASE_URL).hostname;
   const actualRef = hostname.endsWith(".supabase.co") ? hostname.slice(0, -".supabase.co".length) : "";
   if (!expectedRef) { console.error("Hosted setup requires CIVICSYNC_REMOTE_PROJECT_REF. Set it to the non-secret Supabase project ref after verifying the target."); process.exit(3); }

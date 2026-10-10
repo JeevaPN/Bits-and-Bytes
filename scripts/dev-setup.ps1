@@ -1,6 +1,8 @@
 param([switch]$StartApp, [ValidateSet('auto','local','remote-dev')][string]$Target = 'auto')
 $ErrorActionPreference = 'Stop'
 $env:SUPABASE_TELEMETRY_DISABLED = '1'
+. ./scripts/import-env.ps1
+Import-CivicSyncEnvironment
 Write-Host 'CivicSync development setup' -ForegroundColor Cyan
 & powershell -ExecutionPolicy Bypass -File ./scripts/ensure-project-deps.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Project dependency installation failed. Setup stopped before database operations.' }
