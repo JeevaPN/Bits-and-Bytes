@@ -72,6 +72,7 @@ describe("development lifecycle safety", () => {
     expect(setup.slice(seed, start)).toContain("$LASTEXITCODE -ne 0");
     expect(read("scripts/dev-migrate.ps1")).toContain("Migration command failed");
     expect(read("scripts/dev-verify.ps1")).toContain("Verification preflight failed");
+    expect(read("scripts/dev-verify.ps1")).toContain("returned 404 for /api/health");
   });
 
   it("keeps ordinary development startup non-destructive", () => {
