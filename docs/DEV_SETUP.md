@@ -26,3 +26,12 @@ npm run dev:reset -- -ConfirmReset
 Reset is local-only and requires `-ConfirmReset`. Remote migration or seed operations require explicit PowerShell opt-ins. Remote reset is refused. The seed contains labelled development projects, issues, and street segments with stable IDs; it does not fabricate Auth users, official decisions, payments, or real people.
 
 For a dedicated remote development project, use `-Target remote-dev` with `CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS=1`; seeding additionally requires `CIVICSYNC_ALLOW_REMOTE_DEV_SEED=1`. Never set these for production.
+
+The hosted-development one-command wrapper still requires an explicit classification:
+
+```powershell
+$env:CIVICSYNC_REMOTE_TARGET = 'development'
+npm run dev:setup:remote
+```
+
+The wrapper refuses to run when that classification is absent. It never provides a production bypass.

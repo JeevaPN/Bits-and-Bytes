@@ -1,7 +1,7 @@
 param([switch]$StartApp, [ValidateSet('local','remote-dev')][string]$Target = 'local')
 $ErrorActionPreference = 'Stop'
 Write-Host 'CivicSync development setup' -ForegroundColor Cyan
-if ($Target -eq 'local') { node scripts/dev-preflight.mjs } else { node scripts/dev-preflight.mjs --allow-hosted }
+if ($Target -eq 'local') { node scripts/dev-preflight.mjs } else { if ($env:CIVICSYNC_REMOTE_TARGET -ne 'development') { throw 'Remote setup is refused unless CIVICSYNC_REMOTE_TARGET=development is explicitly set for this process.' }; node scripts/dev-preflight.mjs --allow-hosted }
 if (-not (Get-Command supabase -ErrorAction SilentlyContinue)) { throw 'Supabase CLI is required. Install it and ensure it is on PATH.' }
 if ($Target -eq 'local') { supabase start; supabase db push --local } else { if (-not $env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS) { throw 'Remote development migrations require CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS=1.' }; supabase db push }
 & powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1 -Target $Target
