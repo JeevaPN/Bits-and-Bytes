@@ -1,5 +1,6 @@
 "use client";
 import "leaflet/dist/leaflet.css";
+import * as L from "leaflet";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap, Marker } from "react-leaflet";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -13,15 +14,15 @@ const defaultCenter: [number, number] = [13.04, 80.23];
 function LocationControl({ onLocate }: { onLocate: () => void }) {
   const map = useMap();
   useEffect(() => {
-    const control = new (require("leaflet").Control)({ position: "topright" });
+    const control = new L.Control({ position: "topright" });
     control.onAdd = () => {
-      const button = require("leaflet").DomUtil.create("button", "leaflet-bar") as HTMLButtonElement;
+      const button = L.DomUtil.create("button", "leaflet-bar") as HTMLButtonElement;
       button.type = "button";
       button.title = "Show my location";
       button.setAttribute("aria-label", "Show my location");
       button.textContent = "◎";
       button.style.cssText = "width:36px;height:36px;background:white;border:0;cursor:pointer;font-size:21px;line-height:1";
-      require("leaflet").DomEvent.disableClickPropagation(button);
+      L.DomEvent.disableClickPropagation(button);
       button.addEventListener("click", onLocate);
       return button;
     };
