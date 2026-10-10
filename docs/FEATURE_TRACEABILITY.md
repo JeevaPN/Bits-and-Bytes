@@ -6,10 +6,10 @@
 | ID | Tags | Status | Implementation evidence | Test/verification evidence | Feature |
 |---|---|---|---|---|---|
 | CS-001 | D | PASS | app/page.tsx; app/layout.tsx | e2e/public-discovery.spec.ts; npm run build | [SYSTEM] CivicSync landing page explaining the platform and its purpose. |
-| CS-002 | D | PASS | components/shared/header.tsx | npm run typecheck | [SYSTEM] Main navigation for Projects, Map, Report an Issue, Community Groups and Sponsorship. |
+| CS-002 | D | PARTIAL | components/shared/header.tsx | npm run typecheck | [SYSTEM] Main navigation for Projects, Map, Report an Issue, Community Groups and Sponsorship. |
 | CS-003 | D | PARTIAL | app/projects; app/map; app/neighbourhood | e2e/public-discovery.spec.ts | [COMMON] Public browsing of projects, issues and approved group pages without mandatory sign-in. |
 | CS-004 | D | NOT_IMPLEMENTED | — | — | [SYSTEM] Responsive layouts for desktop, tablet and mobile. |
-| CS-005 | D | PASS | lib/validation; lib/services; components/map/osm-map.tsx | tests/neighbourhood-api.test.ts; tests/map-coordinates.test.ts | [SYSTEM] Loading, empty, success, validation-error and failure states for major actions. |
+| CS-005 | D | PARTIAL | lib/validation; lib/services; components/map/osm-map.tsx | tests/neighbourhood-api.test.ts; tests/map-coordinates.test.ts | [SYSTEM] Loading, empty, success, validation-error and failure states for major actions. |
 | CS-006 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Consistent labels, icons, date formats and status indicators. |
 | CS-007 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Search by street, landmark and project name. |
 | CS-008 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Shareable public URLs for projects, issues, groups and sponsorship campaigns. |
@@ -18,7 +18,7 @@
 | CS-011 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Language support infrastructure, including configurable Indian regional languages. |
 | CS-012 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Clearly labelled demo, simulated and externally sourced data where applicable. |
 | CS-013 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Help text explaining verification counts, official review, group completion and sponsorship terminology. |
-| CS-014 | D | PASS | lib/domain/types.ts; supabase/migrations/202610100001_core.sql | tests/auth-integrations.test.ts | [SYSTEM] Three primary role types: Admin, Common People and Social Service Groups. |
+| CS-014 | D | PARTIAL | lib/domain/types.ts; supabase/migrations/202610100001_core.sql | tests/auth-integrations.test.ts | [SYSTEM] Three primary role types: Admin, Common People and Social Service Groups. |
 | CS-015 | D | NOT_IMPLEMENTED | — | — | [SYSTEM] Separate role-aware dashboard/navigation for each primary role. |
 | CS-016 | D | NOT_IMPLEMENTED | — | — | [SYSTEM] Public project/QR browsing without account creation. |
 | CS-017 | P | PARTIAL | app/auth; middleware.ts; lib/supabase/server.ts | tests/auth-integrations.test.ts | [COMMON] Account registration, sign-in, sign-out and account recovery. |
@@ -83,9 +83,9 @@
 | CS-076 | A | NOT_IMPLEMENTED | — | — | [SYSTEM] Advanced geographic-overlap analysis using suitable road/utility geometry. |
 | CS-077 | A | NOT_IMPLEMENTED | — | — | [SYSTEM] Connect with participating municipal or utility coordination systems where an appropriate integration is available. |
 | CS-078 | D | PARTIAL | components/map/osm-map.tsx; lib/services/map-server.ts; app/api/map/route.ts | tests/map-coordinates.test.ts; e2e/public-discovery.spec.ts | [COMMON] Display official project locations on a shared map. |
-| CS-079 | D | PASS | components/map/osm-map.tsx | tests/map-coordinates.test.ts | [COMMON] Display citizen issues and external observations as distinguishable marker types. |
-| CS-080 | D | PASS | components/map/osm-map.tsx | npm run typecheck | [COMMON] Open a project or issue from its map marker. |
-| CS-081 | D | PASS | components/map/osm-map.tsx | npm run typecheck | [COMMON] Search/filter by category, department, location and status. |
+| CS-079 | D | PARTIAL | components/map/osm-map.tsx | tests/map-coordinates.test.ts | [COMMON] Display citizen issues and external observations as distinguishable marker types. |
+| CS-080 | D | PARTIAL | components/map/osm-map.tsx | npm run typecheck; npm run test:e2e | [COMMON] Open a project or issue from its map marker. |
+| CS-081 | D | PARTIAL | components/map/osm-map.tsx | npm run typecheck; npm run test:e2e | [COMMON] Search/filter by category, department, location and status. |
 | CS-082 | D | NOT_IMPLEMENTED | — | — | [COMMON] Follow a project or location for updates. |
 | CS-083 | D | NOT_IMPLEMENTED | — | — | [ADM] Publish affected road segments and known road closures. |
 | CS-084 | D | NOT_IMPLEMENTED | — | — | [COMMON] View declared disruptions and known affected roads. |
@@ -183,8 +183,8 @@
 | CS-176 | D | NOT_IMPLEMENTED | — | — | [COMMON] Select a group or eligible specific activity/project to sponsor. |
 | CS-177 | D | NOT_IMPLEMENTED | — | — | [GROUP] Create a sponsorship request for the group or a defined activity. |
 | CS-178 | D | NOT_IMPLEMENTED | — | — | [GROUP] State the sponsorship purpose, target amount and intended work. |
-| CS-179 | D | PASS | lib/services/neighbourhood-server.ts; app/sponsorship | tests/neighbourhood-api.test.ts | [COMMON] Record a simulated sponsorship pledge for the hackathon demo. |
-| CS-180 | D | PASS | lib/services/neighbourhood-server.ts; app/sponsorship | npm run typecheck | [SYSTEM] Label simulated pledges clearly and never imply that real money was transferred. |
+| CS-179 | D | PARTIAL | lib/services/neighbourhood-server.ts; app/sponsorship | tests/neighbourhood-api.test.ts | [COMMON] Record a simulated sponsorship pledge for the hackathon demo. |
+| CS-180 | D | PARTIAL | lib/services/neighbourhood-server.ts; app/sponsorship | npm run typecheck | [SYSTEM] Label simulated pledges clearly and never imply that real money was transferred. |
 | CS-181 | D | NOT_IMPLEMENTED | — | — | [GROUP] Publish progress updates showing what sponsored support enabled. |
 | CS-182 | D | NOT_IMPLEMENTED | — | — | [COMMON] View the reported use of support and related work evidence. |
 | CS-183 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Distinguish target, pledged, received, allocated, reported-spent and refunded amounts as applicable. |
