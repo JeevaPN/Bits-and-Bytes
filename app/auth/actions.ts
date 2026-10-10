@@ -11,7 +11,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 const credentials = z.object({ email: z.string().trim().email(), password: z.string().min(8).max(128) });
 const displayName = z.string().trim().min(2).max(80);
 // Public signup can request resident or community-group membership only.
-// Admin access must be provisioned by a trusted staff workflow.
+ // admin role requires a trusted staff workflow
 const workspace = z.enum(["common", "group"]);
 export type AuthState = { ok: boolean; message: string; redirectTo?: string };
 const invalid = (message = "Please check the form and try again."): AuthState => ({ ok: false, message });
