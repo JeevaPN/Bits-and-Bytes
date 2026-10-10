@@ -9,11 +9,12 @@ export async function middleware(request: NextRequest) {
   if (enteringAuth) request.cookies.delete(DEMO_WORKSPACE_COOKIE);
   const response = NextResponse.next({ request });
   if (enteringAuth) response.cookies.delete(DEMO_WORKSPACE_COOKIE);
-  const requiredRole = workspaceForPath(request.nextUrl.pathname);
+  const isPartnerOnboarding = request.nextUrl.pathname === "/community-partners/apply" || request.nextUrl.pathname === "/community-partners/application-status";
+  const requiredRole = workspaceForPath(request.nextUrl.pathname) ?? (isPartnerOnboarding ? "group" : null);
   const demoWorkspace = request.cookies.get(DEMO_WORKSPACE_COOKIE)?.value;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL; const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    if (requiredRole && isDemoWorkspace(demoWorkspace) && requiredRole !== demoWorkspace) {
+    if (requiredRole && isDemoWorkspace(demoWorkspace) && requiredRole !== demoWorkspace && !(isPartnerOnboarding && (demoWorkspace === "common" || demoWorkspace === "group"))) {
       return redirectWithCookies(request, response, workspaceHome(demoWorkspace));
     }
     return response;
@@ -28,9 +29,21 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     if (isDemoWorkspace(demoWorkspace)) {
-      return requiredRole === demoWorkspace ? response : redirectWithCookies(request, response, workspaceHome(demoWorkspace));
+      const onboardingAllowed = isPartnerOnboarding && (demoWorkspace === "common" || demoWorkspace === "group");
+      return requiredRole === demoWorkspace || onboardingAllowed ? response : redirectWithCookies(request, response, workspaceHome(demoWorkspace));
     }
-    return redirectWithCookies(request, response, "/auth/sign-in");
+    const returnTo = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+    return redirectWithCookies(request, response, `/auth/sign-in?next=${encodeURIComponent(returnTo)}`);
+  }
+
+  if (enteringAuth) {
+    const { data: profile } = await supabase.from("profiles").select("primary_role").eq("id", user.id).maybeSingle();
+    let role = profile?.primary_role as Role | undefined;
+    if (role !== "admin" && role !== "group" && role !== "common") {
+      const { data: memberships } = await supabase.from("group_members").select("group_id").eq("user_id", user.id).limit(1);
+      role = memberships?.length ? "group" : "common";
+    }
+    return redirectWithCookies(request, response, workspaceHome(role ?? "common"));
   }
 
   const { data: profile } = await supabase
@@ -49,9 +62,6 @@ export async function middleware(request: NextRequest) {
     role = memberships?.length ? "group" : "common";
   }
 
-  const isPartnerOnboarding =
-    request.nextUrl.pathname === "/community-partners/apply" ||
-    request.nextUrl.pathname === "/community-partners/application-status";
   const isAllowedPartnerOnboarding =
     requiredRole === "group" &&
     isPartnerOnboarding &&

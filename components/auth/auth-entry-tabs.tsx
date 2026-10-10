@@ -12,7 +12,7 @@ const demoAccounts = [
 ] as const;
 const initial: AuthState = { ok: false, message: "" };
 
-function DemoAccountChoices() {
+export function DemoAccountChoices({ next = "" }: { next?: string }) {
   const [state, action, pending] = useActionState(signInDemo, initial);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   useEffect(() => {
@@ -20,6 +20,7 @@ function DemoAccountChoices() {
   }, [state]);
 
   return <form action={action} aria-label="Choose a demo account">
+    <input type="hidden" name="next" value={next} />
     <p className="auth-demo-intro">Choose a role to enter its demo workspace. No email or password needed.</p>
     <div className="auth-demo-choices">
       {demoAccounts.map(({ role, label, description, icon: Icon }) => <button
@@ -41,7 +42,7 @@ function DemoAccountChoices() {
   </form>;
 }
 
-export function AuthEntryTabs({ mode, children }: { mode: "sign-in" | "sign-up"; children: ReactNode }) {
+export function AuthEntryTabs({ mode, children, next = "" }: { mode: "sign-in" | "sign-up"; children: ReactNode; next?: string }) {
   const [tab, setTab] = useState<"account" | "demo">("account");
   const id = useId();
   function switchWithKeyboard(event: KeyboardEvent<HTMLButtonElement>) {
@@ -68,6 +69,6 @@ export function AuthEntryTabs({ mode, children }: { mode: "sign-in" | "sign-up";
       >{value === "demo" ? "Demo accounts" : mode === "sign-in" ? "Sign in" : "Create account"}</button>)}
     </div>
     <div id={`${id}-account-panel`} role="tabpanel" aria-labelledby={`${id}-account-tab`} hidden={tab !== "account"}>{children}</div>
-    <div id={`${id}-demo-panel`} role="tabpanel" aria-labelledby={`${id}-demo-tab`} hidden={tab !== "demo"}><DemoAccountChoices /></div>
+    <div id={`${id}-demo-panel`} role="tabpanel" aria-labelledby={`${id}-demo-tab`} hidden={tab !== "demo"}><DemoAccountChoices next={next} /></div>
   </div>;
 }

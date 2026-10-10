@@ -14,6 +14,8 @@ Daily startup without data changes:
 npm run dev
 ```
 
+Every `npm run dev:setup` or `npm run dev:setup:remote` run checks the three demo email addresses through Supabase Auth. It creates only missing accounts and leaves existing Auth users, profiles, and passwords untouched. The check requires `SUPABASE_SERVICE_ROLE_KEY`; hosted targets are refused unless the existing remote-development project identity and opt-ins are set. Ordinary `npm run dev` does not modify accounts.
+
 Explicit operations:
 
 ```powershell

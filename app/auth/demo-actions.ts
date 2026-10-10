@@ -6,6 +6,9 @@ import type { AuthState } from "@/app/auth/actions";
 import { DEMO_WORKSPACE_COOKIE } from "@/lib/auth/demo-workspace";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/observability/logger";
+import { workspaceHome } from "@/lib/auth/workspace-access";
+import { safeRedirectPath } from "@/lib/auth/redirect";
+import { workspaceForPath } from "@/lib/auth/workspace-access";
 
 const demoEmails = {
   admin: "admin.demo@civicsync.test",
@@ -32,5 +35,8 @@ export async function signInDemo(_previous: AuthState, formData: FormData): Prom
     return { ok: false, message: "The demo account’s workspace is unavailable. Please try again later." };
   }
   (await cookies()).delete(DEMO_WORKSPACE_COOKIE);
-  return { ok: true, message: "Opening your demo workspace…", redirectTo: "/" };
+  const requested = safeRedirectPath(String(formData.get("next") || ""), workspaceHome(role.data));
+  const requestedRole = workspaceForPath(requested);
+  const redirectTo = requestedRole && requestedRole !== role.data ? workspaceHome(role.data) : requested;
+  return { ok: true, message: "Opening your demo workspace…", redirectTo };
 }

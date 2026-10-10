@@ -34,7 +34,7 @@ export default async function RootLayout({
                 <nav aria-label="Explore CivicSync" className="site-footer-links">
                   <h2>Explore</h2>
                   <Link href="/projects">Public projects</Link>
-                  <Link href="/issues">Public issue reports</Link>
+                  {workspaceRole === "common" && <Link href="/issues">Neighbourhood issues</Link>}
                   <Link href="/map">Project map</Link>
                   {workspaceRole === "common" && <Link href="/neighbourhood">Neighbourhood</Link>}
                   {workspaceRole === "group" && <Link href="/community-partners">Community partners</Link>}
