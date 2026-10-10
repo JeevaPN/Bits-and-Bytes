@@ -16,6 +16,13 @@ export async function GET(request: Request) {
     if (error) logger.error("health database probe failed", { requestId, route: "/api/health", code: error.code || "DATABASE_ERROR" });
   }
   if (client) { const probes: Record<string, string> = { public_issue_feed: "id,title,location,review_status,source,urgent,latitude,longitude", public_project_map_feed: "id,slug,title,location,status,latitude,longitude", sponsorship_campaigns: "id,title,status,target_amount" }; for (const [relation, fields] of Object.entries(probes)) { const { error } = await client.from(relation).select(fields, { head: true, count: "exact" }); if (error) { relationErrors[relation] = `${error.code || "DATABASE_ERROR"}:${error.message.slice(0, 180)}`; if (error.code === "42P01" || error.code === "PGRST205") missingRelations.push(relation); } } }
-  const healthy = environment.missingRequired.length === 0 && database !== "error" && missingRelations.length === 0 && Object.keys(relationErrors).length === 0;
-  return NextResponse.json({ ok: healthy, requestId, status: healthy ? "ok" : "degraded", database, missingRelations, relationErrors, environment }, { status: healthy ? 200 : 503, headers: { "cache-control": "no-store", "x-request-id": requestId } });
+  const healthy = environment.missingRequired.length === 0 && database === "ok" && missingRelations.length === 0 && Object.keys(relationErrors).length === 0;
+  const components = {
+    database: database === "ok" ? "ok" : database,
+    publicMapReadModel: relationErrors.public_project_map_feed ? "error" : missingRelations.includes("public_project_map_feed") ? "missing" : "ok",
+    publicIssueReadModel: relationErrors.public_issue_feed ? "error" : missingRelations.includes("public_issue_feed") ? "missing" : "ok",
+    applicationEmail: environment.optionalIntegrations.RESEND_API_KEY && environment.optionalIntegrations.RESEND_FROM_EMAIL ? "configured" : "not_configured",
+    supabaseAuthEmail: "managed_by_supabase_auth_configuration",
+  };
+  return NextResponse.json({ ok: healthy, requestId, status: healthy ? "ok" : "degraded", database, components, missingRelations, relationErrors, environment }, { status: healthy ? 200 : 503, headers: { "cache-control": "no-store", "x-request-id": requestId } });
 }

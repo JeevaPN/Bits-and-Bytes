@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1 -StartApp",
-    "dev:setup:remote": "powershell -ExecutionPolicy Bypass -Command \"$env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS='1'; $env:CIVICSYNC_ALLOW_REMOTE_DEV_SEED='1'; & ./scripts/dev-setup.ps1 -Target remote-dev -StartApp\"",
+    "dev:setup:remote": "powershell -ExecutionPolicy Bypass -Command \"$env:CIVICSYNC_REMOTE_TARGET='development'; $env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS='1'; $env:CIVICSYNC_ALLOW_REMOTE_DEV_SEED='1'; & ./scripts/dev-setup.ps1 -Target remote-dev -StartApp\"",
     "dev:reset": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-reset.ps1",
     "dev:seed": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1",
     "dev:verify": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-verify.ps1",
@@ -48,6 +48,7 @@
     "@types/react-dom": "^19.1.9",
     "eslint": "^9.35.0",
     "eslint-config-next": "^15.5.3",
+    "supabase": "2.120.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vitest": "^3.2.7"

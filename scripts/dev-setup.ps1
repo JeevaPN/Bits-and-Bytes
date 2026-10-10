@@ -1,9 +1,17 @@
-param([switch]$StartApp, [ValidateSet('local','remote-dev')][string]$Target = 'local')
+param([switch]$StartApp, [ValidateSet('auto','local','remote-dev')][string]$Target = 'auto')
 $ErrorActionPreference = 'Stop'
+$env:SUPABASE_TELEMETRY_DISABLED = '1'
 Write-Host 'CivicSync development setup' -ForegroundColor Cyan
+& powershell -ExecutionPolicy Bypass -File ./scripts/ensure-project-deps.ps1
+if ($Target -eq 'auto') {
+  $urlLine = Get-Content .env.local,.env -ErrorAction SilentlyContinue | Where-Object { $_ -match '^\s*NEXT_PUBLIC_SUPABASE_URL\s*=' } | Select-Object -First 1
+  if ($urlLine -match 'localhost|127\.0\.0\.1') { $Target = 'local' } else { $Target = 'remote-dev' }
+}
 if ($Target -eq 'local') { node scripts/dev-preflight.mjs } else { if ($env:CIVICSYNC_REMOTE_TARGET -ne 'development') { throw 'Remote setup is refused unless CIVICSYNC_REMOTE_TARGET=development is explicitly set for this process.' }; node scripts/dev-preflight.mjs --allow-hosted }
-if (-not (Get-Command supabase -ErrorAction SilentlyContinue)) { throw 'Supabase CLI is required. Install it and ensure it is on PATH.' }
-if ($Target -eq 'local') { supabase start; supabase db push --local } else { if (-not $env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS) { throw 'Remote development migrations require CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS=1.' }; supabase db push }
+& npx.cmd --no-install supabase --version
+if ($LASTEXITCODE -ne 0) { throw 'The project-local Supabase CLI could not start. Run npm install and check Node.js 20+; no global CLI or package manager is required.' }
+if ($Target -eq 'local') { & npx.cmd --no-install supabase start; if ($LASTEXITCODE -ne 0) { throw 'Local Supabase could not start. Ensure Docker Desktop is running, then rerun npm run dev:setup.' }; & npx.cmd --no-install supabase db push --local } else { if (-not $env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS) { throw 'Remote development migrations require CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS=1.' }; & npx.cmd --no-install supabase db push --linked }
+if ($LASTEXITCODE -ne 0) { throw 'Database migrations failed. Review the migration conflict/error above; no destructive repair was attempted.' }
 & powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1 -Target $Target
 if ($StartApp) {
   Write-Host 'Setup complete. Starting CivicSync and waiting for readiness.' -ForegroundColor Green

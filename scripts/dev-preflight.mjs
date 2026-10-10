@@ -8,6 +8,8 @@ const values = {};
 for (const file of files) { const full = path.join(root, file); if (!fs.existsSync(full)) continue; for (const line of fs.readFileSync(full, "utf8").split(/\r?\n/)) { const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/); if (match && values[match[1]] === undefined) values[match[1]] = match[2].replace(/^['"]|['"]$/g, ""); } }
 const missing = required.filter((name) => !values[name]);
 const malformed = [];
+const nodeMajor = Number(process.versions.node.split(".")[0]);
+if (nodeMajor < 20) malformed.push("Node.js 20+");
 if (values.NEXT_PUBLIC_SUPABASE_URL && !/^https:\/\//.test(values.NEXT_PUBLIC_SUPABASE_URL) && !/^http:\/\/(127\.0\.0\.1|localhost)/.test(values.NEXT_PUBLIC_SUPABASE_URL)) malformed.push("NEXT_PUBLIC_SUPABASE_URL");
 if (values.NEXT_PUBLIC_SITE_URL && !/^https?:\/\//.test(values.NEXT_PUBLIC_SITE_URL)) malformed.push("NEXT_PUBLIC_SITE_URL");
 console.log(`Environment files detected: ${files.filter((file) => fs.existsSync(path.join(root, file))).join(", ") || "none"}`);
@@ -18,3 +20,11 @@ if (malformed.length) { console.error(`Malformed configuration variables: ${malf
 const local = /^https?:\/\/(127\.0\.0\.1|localhost)/.test(values.NEXT_PUBLIC_SUPABASE_URL);
 console.log(`Database mode: ${local ? "local Supabase URL" : "hosted Supabase URL (non-destructive mode)"}`);
 if (!local && !process.argv.includes("--allow-hosted")) { console.error("Hosted Supabase URL detected. Select an explicitly classified remote-dev target instead of running local setup against hosted configuration."); process.exit(3); }
+if (!local && process.argv.includes("--allow-hosted")) {
+  const expectedRef = process.env.CIVICSYNC_REMOTE_PROJECT_REF;
+  const hostname = new URL(values.NEXT_PUBLIC_SUPABASE_URL).hostname;
+  const actualRef = hostname.endsWith(".supabase.co") ? hostname.slice(0, -".supabase.co".length) : "";
+  if (!expectedRef) { console.error("Hosted setup requires CIVICSYNC_REMOTE_PROJECT_REF. Set it to the non-secret Supabase project ref after verifying the target."); process.exit(3); }
+  if (!actualRef || expectedRef !== actualRef) { console.error("Hosted setup refused: CIVICSYNC_REMOTE_PROJECT_REF does not match the configured Supabase URL project identity."); process.exit(3); }
+  console.log("Hosted target identity: URL project ref matches the explicitly supplied development project ref.");
+}
