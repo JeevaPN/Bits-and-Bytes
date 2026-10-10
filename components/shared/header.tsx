@@ -74,6 +74,7 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
         <div className="site-header-left">
           <button
             className="site-menu-trigger"
+            suppressHydrationWarning
             type="button"
             aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={menuOpen}

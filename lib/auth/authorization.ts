@@ -17,17 +17,16 @@ export async function requireRole(roles: Role[]) {
   return profile;
 }
 
-/** Resolve the signed-in user's workspace. Group membership also identifies
- * community partners because normal group owners keep the common profile role. */
+/** The saved account role takes priority over any previous demo session. */
 export async function getCurrentWorkspaceRole(): Promise<Role | null> {
   const demoWorkspace = (await cookies()).get(DEMO_WORKSPACE_COOKIE)?.value;
-  if (isDemoWorkspace(demoWorkspace)) return demoWorkspace;
+  const demoRole = isDemoWorkspace(demoWorkspace) ? demoWorkspace : null;
 
   const client = await createClient();
-  if (!client) return null;
+  if (!client) return demoRole;
 
   const { data: { user } } = await client.auth.getUser();
-  if (!user) return null;
+  if (!user) return demoRole;
 
   const { data: profile } = await client
     .from("profiles")
@@ -35,7 +34,7 @@ export async function getCurrentWorkspaceRole(): Promise<Role | null> {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.primary_role === "admin" || profile?.primary_role === "group") {
+  if (profile?.primary_role === "admin" || profile?.primary_role === "group" || profile?.primary_role === "common") {
     return profile.primary_role;
   }
 

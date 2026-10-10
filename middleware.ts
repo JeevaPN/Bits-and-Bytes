@@ -5,16 +5,19 @@ import { workspaceForPath, workspaceHome } from "@/lib/auth/workspace-access";
 import { DEMO_WORKSPACE_COOKIE, isDemoWorkspace } from "@/lib/auth/demo-workspace";
 
 export async function middleware(request: NextRequest) {
+  const enteringAuth = request.nextUrl.pathname === "/auth/sign-in" || request.nextUrl.pathname === "/auth/sign-up";
+  if (enteringAuth) request.cookies.delete(DEMO_WORKSPACE_COOKIE);
   const response = NextResponse.next({ request });
+  if (enteringAuth) response.cookies.delete(DEMO_WORKSPACE_COOKIE);
   const requiredRole = workspaceForPath(request.nextUrl.pathname);
   const demoWorkspace = request.cookies.get(DEMO_WORKSPACE_COOKIE)?.value;
-  if (requiredRole && isDemoWorkspace(demoWorkspace)) {
-    if (requiredRole === demoWorkspace) return response;
-    return redirectWithCookies(request, response, workspaceHome(demoWorkspace));
-  }
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL; const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return response;
+  if (!url || !key) {
+    if (requiredRole && isDemoWorkspace(demoWorkspace) && requiredRole !== demoWorkspace) {
+      return redirectWithCookies(request, response, workspaceHome(demoWorkspace));
+    }
+    return response;
+  }
   const supabase = createServerClient(url, key, { cookies: { getAll: () => request.cookies.getAll(), setAll(values) { values.forEach(({ name, value, options }) => { request.cookies.set(name, value); response.cookies.set(name, value, options); }); } } });
 
   if (!requiredRole) {
@@ -23,7 +26,12 @@ export async function middleware(request: NextRequest) {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return redirectWithCookies(request, response, "/auth/sign-in");
+  if (!user) {
+    if (isDemoWorkspace(demoWorkspace)) {
+      return requiredRole === demoWorkspace ? response : redirectWithCookies(request, response, workspaceHome(demoWorkspace));
+    }
+    return redirectWithCookies(request, response, "/auth/sign-in");
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -32,7 +40,7 @@ export async function middleware(request: NextRequest) {
     .maybeSingle();
 
   let role = profile?.primary_role as Role | undefined;
-  if (role !== "admin" && role !== "group") {
+  if (role !== "admin" && role !== "group" && role !== "common") {
     const { data: memberships } = await supabase
       .from("group_members")
       .select("group_id")
