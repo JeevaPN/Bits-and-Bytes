@@ -1,9 +1,7 @@
 import type { Role } from "@/lib/domain/types";
 
-export function workspaceHome(role: Role): string {
-  if (role === "admin") return "/admin";
-  if (role === "group") return "/community-partners/dashboard";
-  return "/neighbourhood";
+export function workspaceHome(_role: Role): string {
+  return "/";
 }
 
 export function workspaceForPath(pathname: string): Role | null {

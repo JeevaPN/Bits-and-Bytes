@@ -29,11 +29,21 @@ export function ThemeToggle() {
     </button>
   );
 }
-const links = [["Projects", "/projects"], ["Map", "/map"], ["Neighbourhood", "/neighbourhood"], ["Community Partners", "/community-partners"], ["Sponsorship", "/sponsorship"], ["Admin", "/admin"]];
+const links = [["Projects", "/projects"], ["Open Issues", "/issues"], ["Map", "/map"], ["Neighbourhood", "/neighbourhood"], ["Community Partners", "/community-partners"], ["Sponsorship", "/sponsorship"], ["Admin", "/admin"]];
 export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleLinks = links.filter(([, href]) => canVisitPath(workspaceRole, href));
+  const sectionForPath: Record<string, string> = {
+    "/projects": "public-projects",
+    "/issues": "public-issues",
+    "/map": "project-map",
+    "/sponsorship": "sponsorship",
+    "/admin": "workspace",
+    "/neighbourhood": "workspace",
+    "/community-partners": "workspace",
+  };
+  const onUnifiedHome = pathname === "/" && workspaceRole !== null;
   const workspaceLabel = workspaceRole === "admin"
     ? "Admin"
     : workspaceRole === "common"
@@ -105,10 +115,11 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
             <nav className="site-menu-links" aria-label="Main navigation">
               {visibleLinks.map(([name, href]) => {
                 const active = pathname === href || pathname.startsWith(`${href}/`);
+                const destination = onUnifiedHome && sectionForPath[href] ? `/#${sectionForPath[href]}` : href;
                 return (
                   <Link
                     className={active ? "navlink navlink-active" : "navlink"}
-                    href={href}
+                    href={destination}
                     key={href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setMenuOpen(false)}

@@ -1,117 +1,53 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ScatteredLightWatermark } from "@/components/shared/scattered-light-watermark";
 
-const RETURN_DURATION_MS = 1_000;
-
-export function LightWatermark() {
+function FixedDarkWatermark() {
   const watermarkRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const watermark = watermarkRef.current;
     if (!watermark) return;
-
-    let pointerOnCard = false;
-    let returnAnimations: Animation[] = [];
-    let runId = 0;
-
-    const cardFor = (target: EventTarget | null) =>
-      target instanceof Element ? target.closest(".card") : null;
-
-    const traceToStart = () => {
-      if (document.documentElement.classList.contains("dark")) return;
-      if (watermark.classList.contains("is-returning") || watermark.classList.contains("is-aligned")) return;
-
-      const pieces = Array.from(
-        watermark.querySelectorAll<HTMLElement>(".watermark-letter, .light-watermark-star"),
-      );
-      const currentPositions = pieces.map((piece) => {
-        const rect = piece.getBoundingClientRect();
-        return { left: rect.left, top: rect.top };
-      });
-
-      // Stop the CSS drift synchronously, then measure each piece's true home position.
-      // The browser paints after this task, so the intermediate reset is not visible.
-      watermark.classList.remove("is-scattered");
-      watermark.classList.add("is-returning");
-      returnAnimations = pieces.map((piece, index) => {
-        const home = piece.getBoundingClientRect();
-        const offsetX = currentPositions[index].left - home.left;
-        const offsetY = currentPositions[index].top - home.top;
-        const keyframes: Keyframe[] = [
-          { transform: `translate(${offsetX}px, ${offsetY}px)` },
-          { transform: "translate(0px, 0px)" },
-        ];
-
-        return piece.animate(keyframes, {
-          duration: RETURN_DURATION_MS,
-          easing: "linear",
-          fill: "forwards",
-        });
-      });
-
-      const currentRun = ++runId;
-
-      void Promise.all(returnAnimations.map((animation) => animation.finished.catch(() => undefined))).then(() => {
-        if (currentRun !== runId) return;
-        returnAnimations.forEach((animation) => animation.cancel());
-        returnAnimations = [];
-        watermark.classList.remove("is-returning");
-        if (pointerOnCard) watermark.classList.add("is-aligned");
-        else watermark.classList.add("is-scattered");
-      });
-    };
-
-    const handlePointerOver = (event: PointerEvent) => {
-      const nextCard = cardFor(event.target);
-      const previousCard = cardFor(event.relatedTarget);
-      if (!nextCard || nextCard === previousCard) return;
-
-      pointerOnCard = true;
-      if (watermark.classList.contains("is-returning")) return;
-      if (watermark.classList.contains("is-aligned")) return;
-      traceToStart();
-    };
-
-    const handlePointerOut = (event: PointerEvent) => {
-      const previousCard = cardFor(event.target);
-      const nextCard = cardFor(event.relatedTarget);
-      if (!previousCard || previousCard === nextCard) return;
-
-      pointerOnCard = false;
-      if (watermark.classList.contains("is-aligned")) {
-        watermark.classList.remove("is-aligned");
-        watermark.classList.add("is-scattered");
+    // Detect hovering without placing a clickable layer over page content.
+    const targets = Array.from(watermark.querySelectorAll<HTMLElement>(".fixed-brand-word, .fixed-brand-star"));
+    const updateHover = (event: PointerEvent) => {
+      if (!document.documentElement.classList.contains("dark")) {
+        watermark.classList.remove("is-expanded");
+        return;
       }
+      const hovered = targets.some((target) => {
+        const rect = target.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      });
+      watermark.classList.toggle("is-expanded", hovered);
     };
-
-    document.addEventListener("pointerover", handlePointerOver);
-    document.addEventListener("pointerout", handlePointerOut);
-
+    const clearHover = () => watermark.classList.remove("is-expanded");
+    document.addEventListener("pointermove", updateHover, { passive: true });
+    document.documentElement.addEventListener("pointerleave", clearHover);
+    window.addEventListener("blur", clearHover);
     return () => {
-      runId += 1;
-      returnAnimations.forEach((animation) => animation.cancel());
-      document.removeEventListener("pointerover", handlePointerOver);
-      document.removeEventListener("pointerout", handlePointerOut);
+      document.removeEventListener("pointermove", updateHover);
+      document.documentElement.removeEventListener("pointerleave", clearHover);
+      window.removeEventListener("blur", clearHover);
     };
   }, []);
 
   return (
-    <div ref={watermarkRef} className="light-watermark is-scattered" aria-hidden="true">
-      <span className="light-watermark-word light-watermark-civic">
-        <span className="watermark-letter watermark-letter-1">C</span>
-        <span className="watermark-letter watermark-letter-2">i</span>
-        <span className="watermark-letter watermark-letter-3">v</span>
-        <span className="watermark-letter watermark-letter-4">i</span>
-        <span className="watermark-letter watermark-letter-5">c</span>
+    <div ref={watermarkRef} className="light-watermark fixed-brand-watermark" aria-hidden="true">
+      <span className="fixed-brand-word fixed-brand-civic">
+        <span className="fixed-brand-initial">C</span>
+        <span className="fixed-brand-suffix">ivic</span>
       </span>
-      <span className="watermark-star light-watermark-star" />
-      <span className="light-watermark-word light-watermark-sync">
-        <span className="watermark-letter watermark-letter-6">S</span>
-        <span className="watermark-letter watermark-letter-7">y</span>
-        <span className="watermark-letter watermark-letter-8">n</span>
-        <span className="watermark-letter watermark-letter-9">c</span>
+      <span className="fixed-brand-star" />
+      <span className="fixed-brand-word fixed-brand-sync">
+        <span className="fixed-brand-initial">S</span>
+        <span className="fixed-brand-suffix">ync</span>
       </span>
     </div>
   );
+}
+
+export function LightWatermark() {
+  return <><FixedDarkWatermark /><ScatteredLightWatermark /></>;
 }

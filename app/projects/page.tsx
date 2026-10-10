@@ -1,2 +1,5 @@
-import Link from "next/link";import { projects } from "@/lib/domain/demo-data";
-export default function Projects(){return <main className="container" style={{paddingTop:48}}><div className="eyebrow">Public works · demo data</div><h1>Projects around you</h1><p style={{color:"var(--muted)"}}>Browse published work, timelines, and project details — no account needed.</p><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(270px,1fr))",gap:16,marginTop:28}}>{projects.map(p=><Link className="card" href={`/projects/${p.slug}`} key={p.id}><span className="eyebrow">{p.status} · {p.department}</span><h2 style={{fontSize:22}}>{p.title}</h2><p style={{color:"var(--muted)"}}>{p.description}</p><p>📍 {p.location}</p><span style={{color:"var(--green)"}}>View project →</span></Link>)}</div></main>}
+import { PublicProjectsPage } from "@/components/shared/public-projects-page";
+
+export default function ProjectsPage() {
+  return <main><PublicProjectsPage /></main>;
+}

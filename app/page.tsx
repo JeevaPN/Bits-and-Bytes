@@ -1,14 +1,13 @@
 import React from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
 import { projects, issues, groups } from "@/lib/domain/demo-data";
 import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
-import { workspaceHome } from "@/lib/auth/workspace-access";
+import { WorkspacePageDeck } from "@/components/shared/workspace-page-deck";
 
 export default async function Home() {
   const role = await getCurrentWorkspaceRole();
-  if (role) redirect(workspaceHome(role));
+  if (role) return <WorkspacePageDeck role={role} />;
 
   return (
     <main className="home-scroll-pages">

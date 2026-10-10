@@ -12,7 +12,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const { next } = await searchParams;
 
   return (
-    <main className="container" style={{ maxWidth: 560, paddingTop: 48 }}>
+    <main className="container auth-page" style={{ maxWidth: 560, paddingTop: 48 }}>
       <div className="eyebrow auth-brand-eyebrow">
         <span className="auth-brand-civic">Civic</span><span className="auth-brand-sync">Sync</span>
       </div>
