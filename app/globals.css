@@ -1831,7 +1831,7 @@ html:has(.workspace-scroll-deck) {
   }
 }
 
-@media (max-width: 1060px) {
+@media (max-width: 900px) {
   .site-primary-nav {
     display: none;
   }
