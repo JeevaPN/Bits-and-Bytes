@@ -4,32 +4,53 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1 -StartApp",
+    "dev:setup:remote": "powershell -ExecutionPolicy Bypass -Command \"$env:CIVICSYNC_REMOTE_TARGET='development'; $env:CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS='1'; $env:CIVICSYNC_ALLOW_REMOTE_DEV_SEED='1'; & ./scripts/dev-setup.ps1 -Target remote-dev -StartApp\"",
+    "dev:reset": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-reset.ps1",
+    "dev:seed": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1",
+    "dev:verify": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-verify.ps1",
+    "db:migrate": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-migrate.ps1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "generate:traceability": "node scripts/generate-feature-traceability.mjs",
+    "validate:traceability": "node scripts/validate-feature-traceability.mjs",
+    "validate:migrations": "node scripts/validate-migrations.mjs",
+    "setup:neighbourhood": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-neighbourhood.ps1 -Install",
+    "verify:neighbourhood": "powershell -ExecutionPolicy Bypass -File ./scripts/verify-neighbourhood.ps1"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.58.0",
     "framer-motion": "^14.1.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
     "next": "^15.5.3",
     "next-themes": "^0.4.6",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-leaflet": "^5.0.0",
+    "server-only": "^0.0.1",
     "zod": "^4.1.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4.1.13",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^22.18.6",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "eslint": "^9.35.0",
     "eslint-config-next": "^15.5.3",
+    "supabase": "2.120.0",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.7"
   }
 }

@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/lib/auth/redirect";
+export async function GET(request: Request) { const url = new URL(request.url); const tokenHash = url.searchParams.get("token_hash"); const type = url.searchParams.get("type"); const client = await createClient(); if (!client || !tokenHash || !["recovery", "email"].includes(type || "")) return NextResponse.redirect(new URL("/auth/sign-in?error=confirmation", url.origin)); const { error } = await client.auth.verifyOtp({ type: type as "recovery" | "email", token_hash: tokenHash }); return NextResponse.redirect(new URL(error ? "/auth/sign-in?error=confirmation" : safeRedirectPath(url.searchParams.get("next")), url.origin)); }
