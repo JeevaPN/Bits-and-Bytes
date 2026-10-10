@@ -4,6 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1 -StartApp",
+    "dev:reset": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-reset.ps1",
+    "dev:seed": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1",
+    "dev:verify": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-verify.ps1",
+    "db:migrate": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-migrate.ps1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
