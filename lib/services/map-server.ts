@@ -22,11 +22,10 @@ const failure = (message: string): ApiResult<PublicMapRecord[]> => ({ ok: false,
 export async function listPublicMapRecords(): Promise<ApiResult<PublicMapRecord[]>> {
   const client = await createClient();
   if (!client) return failure("Supabase is not configured.");
-  const [projects, issues] = await Promise.all([
-    client.from("public_project_map_feed").select("id,slug,title,location,status,latitude,longitude").limit(1000),
-    client.from("public_issue_feed").select("id,title,location,review_status,source,urgent,latitude,longitude").limit(1000),
-  ]);
-  if (projects.error || issues.error) { const failed = projects.error || issues.error; logger.error("public map read model unavailable", { route: "/api/map", operation: "read_map_views", code: failed?.code || "DATABASE_ERROR" }); return failure("Public map data is temporarily unavailable. Check that the CivicSync migrations are applied."); }
+  const projects = await client.from("public_project_map_feed").select("id,slug,title,location,status,latitude,longitude").limit(1000);
+  if (projects.error) { logger.error("public project map read model unavailable", { route: "/api/map", operation: "read_public_project_map_feed", code: `${projects.error.code || "DATABASE_ERROR"}:${projects.error.message.slice(0, 180)}` }); return failure("Public project map data is unavailable. Check the public_project_map_feed view and PostgREST schema cache."); }
+  const issues = await client.from("public_issue_feed").select("id,title,location,review_status,source,urgent,latitude,longitude").limit(1000);
+  if (issues.error) { logger.error("public issue map read model unavailable", { route: "/api/map", operation: "read_public_issue_feed", code: `${issues.error.code || "DATABASE_ERROR"}:${issues.error.message.slice(0, 180)}` }); return failure("Public issue map data is unavailable. Check the public_issue_feed view and PostgREST schema cache."); }
   const records: PublicMapRecord[] = [];
   for (const row of projects.data ?? []) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);
