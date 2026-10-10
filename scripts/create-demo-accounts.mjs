@@ -21,6 +21,17 @@ async function main() {
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error("Supabase URL and server service role key are required.");
   }
+  const configuredUrl = new URL(env.NEXT_PUBLIC_SUPABASE_URL);
+  const isLocal = ["localhost", "127.0.0.1"].includes(configuredUrl.hostname);
+  const configuredRef = configuredUrl.hostname.endsWith(".supabase.co")
+    ? configuredUrl.hostname.slice(0, -".supabase.co".length)
+    : "";
+  if (!isLocal && (env.CIVICSYNC_REMOTE_TARGET !== "development"
+      || env.CIVICSYNC_ALLOW_REMOTE_DEV_SEED !== "1"
+      || env.CIVICSYNC_ALLOW_REMOTE_DEV_MIGRATIONS !== "1"
+      || !configuredRef || env.CIVICSYNC_REMOTE_PROJECT_REF !== configuredRef)) {
+    throw new Error("Refusing to create demo accounts on a hosted project unless it is explicitly verified as the configured remote development target.");
+  }
   const target = new URL(env.NEXT_PUBLIC_SUPABASE_URL).hostname;
   const service = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -129,8 +140,7 @@ async function main() {
   }
   fs.writeFileSync(envPath, envFile);
   console.log("All three roles saved. Partner account owns an approved demo group.");
-  console.log(`Login details saved locally to ${credentialsPath}`);
-  console.log(JSON.stringify(report.accounts.map(({ label, email, password }) => ({ role: label, email, password })), null, 2));
+  console.log("One-click demo sign-in is ready. Credentials are stored locally and were not printed.");
 }
 
 main().catch((error) => {
