@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { CommunityGroup } from "@/lib/domain/types";
-import { groups as demoGroups } from "@/lib/domain/demo-data";
-import { isCommunityPartnersDemo } from "@/lib/api/community-partners";
 import { listPublicCommunityGroups } from "@/lib/supabase/community-partners";
 
 export default function CommunityPartnersPage() {
-  const [groups, setGroups] = useState<CommunityGroup[]>(isCommunityPartnersDemo ? demoGroups.filter((group) => group.approved) : []);
-  const [status, setStatus] = useState(isCommunityPartnersDemo ? "Showing demo profiles." : "Loading approved partners…");
+  const [groups, setGroups] = useState<CommunityGroup[]>([]);
+  const [status, setStatus] = useState("Loading approved partners…");
 
   useEffect(() => {
-    if (isCommunityPartnersDemo) return;
     let active = true;
     void listPublicCommunityGroups().then((result) => {
       if (!active) return;
