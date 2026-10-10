@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://bits-and-bytes-kappa.vercel.app/neighbourhood"><strong>🌐 Explore the Live Web Application</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://github.com/JeevaPN/Bits-and-Bytes"><strong>📂 View Source Code</strong></a>
+  <a href="https://drive.google.com/file/d/1dopiXGV94wqGlcwu3NN3nQPVZxlFyNCb/view?usp=sharing"><strong>📂 View Demo Video</strong></a>
 </p>
 
 > **Project status:** The web application is deployed on Vercel. Development of the companion Android application is actively underway as part of the same CivicSync initiative.
