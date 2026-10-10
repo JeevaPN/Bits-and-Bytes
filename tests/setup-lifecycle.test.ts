@@ -13,6 +13,8 @@ describe("development lifecycle safety", () => {
     expect(read("scripts/dev-setup.ps1")).toContain("npx.cmd --no-install supabase");
     expect(read("scripts/dev-setup.ps1")).toContain("ensure-project-deps.ps1");
     expect(read("scripts/dev-setup.ps1")).toContain("db push --linked");
+    expect(read("scripts/dev-setup.ps1")).toContain("No Supabase CLI database operation was attempted");
+    expect(read("scripts/dev-setup.ps1")).toContain("schema/read-model verification failed");
     expect(read("scripts/dev-setup.ps1")).not.toContain("Get-Command supabase");
   });
 
@@ -24,6 +26,8 @@ describe("development lifecycle safety", () => {
     expect(setup).toContain("CIVICSYNC_REMOTE_TARGET -ne 'development'");
     expect(read("scripts/dev-preflight.mjs")).toContain("CIVICSYNC_REMOTE_PROJECT_REF");
     expect(read("scripts/dev-preflight.mjs")).toContain("does not match");
+    expect(read("scripts/dev-preflight.mjs")).toContain("existing Supabase CLI link");
+    expect(setup.indexOf("node scripts/dev-preflight.mjs --allow-hosted")).toBeLessThan(setup.indexOf("npx.cmd --no-install supabase --version"));
   });
 
   it("keeps seed operations idempotent and does not fabricate auth users", () => {
@@ -32,6 +36,8 @@ describe("development lifecycle safety", () => {
     expect(seed).toContain("Auth users are intentionally not created");
     expect(read("scripts/dev-seed.ps1")).toContain("db query");
     expect(read("scripts/dev-seed.ps1")).toContain("--linked");
+    expect(read("scripts/dev-seed.ps1")).toContain("Seed command failed");
+    expect(read("scripts/dev-setup.ps1")).toContain("if ($LASTEXITCODE -ne 0) { throw 'Development seed failed");
   });
 
   it("checks readiness through the application health contract", () => {
@@ -40,6 +46,27 @@ describe("development lifecycle safety", () => {
     expect(verify).toContain("CivicSync readiness: OK");
     expect(read("app/api/health/route.ts")).toContain("missingRelations");
     expect(read("app/api/health/route.ts")).toContain("relationErrors");
+    expect(read("app/api/health/route.ts")).toContain("publicMapReadModel");
+  });
+
+  it("verifies actual schema objects after migration history", () => {
+    const setup = read("scripts/dev-setup.ps1");
+    const verify = read("supabase/verify.sql");
+    expect(setup).toContain("supabase/verify.sql");
+    expect(verify).toContain("public_project_map_feed");
+    expect(verify).toContain("handle_new_user");
+    expect(verify).toContain("pg_policies");
+  });
+
+  it("does not start the app unless every setup subprocess succeeds", () => {
+    const setup = read("scripts/dev-setup.ps1");
+    const seed = setup.indexOf("dev-seed.ps1");
+    const start = setup.indexOf("Start-Process -FilePath 'npm.cmd'");
+    expect(seed).toBeGreaterThan(-1);
+    expect(start).toBeGreaterThan(seed);
+    expect(setup.slice(seed, start)).toContain("$LASTEXITCODE -ne 0");
+    expect(read("scripts/dev-migrate.ps1")).toContain("Migration command failed");
+    expect(read("scripts/dev-verify.ps1")).toContain("Verification preflight failed");
   });
 
   it("keeps ordinary development startup non-destructive", () => {

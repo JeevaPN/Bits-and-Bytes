@@ -6,4 +6,6 @@ if ($Target -ne 'local') { throw 'Remote reset is refused. Use a reviewed dispos
 & npx.cmd --no-install supabase --version
 if ($LASTEXITCODE -ne 0) { throw 'The project-local Supabase CLI could not start. Run npm install and check Node.js 20+.' }
 & npx.cmd --no-install supabase db reset --local
+if ($LASTEXITCODE -ne 0) { throw 'Local database reset failed.' }
 & powershell -ExecutionPolicy Bypass -File ./scripts/dev-verify.ps1
+if ($LASTEXITCODE -ne 0) { throw 'Post-reset verification failed.' }

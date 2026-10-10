@@ -26,5 +26,10 @@ if (!local && process.argv.includes("--allow-hosted")) {
   const actualRef = hostname.endsWith(".supabase.co") ? hostname.slice(0, -".supabase.co".length) : "";
   if (!expectedRef) { console.error("Hosted setup requires CIVICSYNC_REMOTE_PROJECT_REF. Set it to the non-secret Supabase project ref after verifying the target."); process.exit(3); }
   if (!actualRef || expectedRef !== actualRef) { console.error("Hosted setup refused: CIVICSYNC_REMOTE_PROJECT_REF does not match the configured Supabase URL project identity."); process.exit(3); }
+  const linkPath = path.join(root, "supabase", ".temp", "project-ref");
+  const linkedRef = fs.existsSync(linkPath) ? fs.readFileSync(linkPath, "utf8").trim() : "";
+  if (!linkedRef) { console.error("Hosted setup requires an existing Supabase CLI link. Open the Supabase dashboard URL, copy its project ref, set CIVICSYNC_REMOTE_PROJECT_REF, then run: npx.cmd --no-install supabase link --project-ref <verified-project-ref>"); process.exit(3); }
+  if (linkedRef !== expectedRef) { console.error("Hosted setup refused: the existing Supabase CLI link points to a different project ref. Relink only after verifying the intended development project."); process.exit(3); }
   console.log("Hosted target identity: URL project ref matches the explicitly supplied development project ref.");
+  console.log("Hosted target identity: existing Supabase CLI link matches the same project ref.");
 }
