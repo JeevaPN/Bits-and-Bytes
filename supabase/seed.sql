@@ -22,3 +22,13 @@ insert into public.issues(id,title,description,category,location,geom,observed_a
 ('30000000-0000-4000-8000-000000000001','Pothole near Marina service road','Development fixture: a pothole reported near the resurfacing project.','pothole','Marina Service Road',st_setsrid(st_makepoint(80.2720,13.0525),4326)::geography,'2026-10-08T08:00:00Z','citizen','unverified',false),
 ('30000000-0000-4000-8000-000000000002','Blocked footpath at Market Street','Development fixture: footpath access is blocked near the drainage works.','blocked_footpath','Market Street',st_setsrid(st_makepoint(80.2490,13.0375),4326)::geography,'2026-10-09T09:30:00Z','citizen','accepted',true)
 on conflict(id) do update set title=excluded.title,description=excluded.description,review_status=excluded.review_status,urgent=excluded.urgent;
+
+-- Development-only admin workflow fixtures. Leave actor IDs null so seed rows
+-- remain clearly synthetic and do not impersonate a demo account's actions.
+insert into public.coordination_cases(id,title,project_ids,segment_ids,conflict_reason,created_by)
+values('40000000-0000-4000-8000-000000000001','Demo: coordinate Market Street works',array['20000000-0000-4000-8000-000000000002'::uuid],array['10000000-0000-4000-8000-000000000002'::uuid],'Development fixture: review drainage and resurfacing dates before scheduling.',null)
+on conflict(id) do nothing;
+
+insert into public.restoration_inspections(id,project_id,inspection_date,status,notes,reinspection_date,created_by)
+select '50000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','2026-10-10','inspection_due','Development fixture: restoration inspection awaiting a staff visit.',null,p.id from public.profiles p where p.primary_role='admin' order by p.created_at limit 1
+on conflict(id) do nothing;

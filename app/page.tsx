@@ -1,27 +1,34 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
-import { projects, issues, groups } from "@/lib/domain/demo-data";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
+import { MapPreview as LiveMapPreview } from "@/components/shared/public-map-page";
+import { workspaceHome } from "@/lib/auth/workspace-access";
 
-export default function Home() {
+export default async function Home() {
+  const role = await getCurrentWorkspaceRole();
+  // The root route is always the public landing page. Workspaces have their own stable routes.
+  const client = await createClient();
+  const [projectResult, issueResult, groupResult] = client ? await Promise.all([
+    client.from("projects").select("id,slug,title,department,location,status,expected_end").eq("is_published", true).order("updated_at", { ascending: false }).limit(3),
+    client.from("public_issue_feed").select("id", { count: "exact", head: true }),
+    client.from("public_community_groups").select("id", { count: "exact", head: true }),
+  ]) : [{ data: null, count: 0, error: null }, { data: null, count: 0, error: null }, { data: null, count: 0, error: null }];
+  const projects = projectResult.data ?? [];
+
   return (
-    <main style={{ minHeight: "100vh" }}>
+    <main className="home-scroll-pages">
       {/* Hero Section */}
       <section
+        className="home-snap-section home-hero-section"
         style={{
-          padding: "76px 0 82px",
           overflow: "hidden",
           borderBottom: "1px solid var(--border)",
         }}
       >
         <div
-          className="container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr .9fr",
-            gap: 54,
-            alignItems: "center",
-          }}
+          className="container home-hero-grid"
         >
           <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
             <div
@@ -37,18 +44,9 @@ export default function Home() {
               A clearer view of your neighbourhood
             </div>
             
-            <h1
-              style={{
-                fontSize: "clamp(42px,6vw,68px)",
-                lineHeight: 1.02,
-                letterSpacing: "-.035em",
-                maxWidth: 650,
-                margin: "18px 0",
-                color: "var(--text-primary)",
-              }}
-            >
-              The work around you,{" "}
-              <span style={{ color: "var(--accent)" }}>in the open.</span>
+            <h1 className="home-hero-title">
+              The work around you,
+              <span className="home-hero-accent">in the open.</span>
             </h1>
             <p
               style={{
@@ -64,7 +62,7 @@ export default function Home() {
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
               <Link
                 className="button"
-                href="/projects"
+                href={role ? workspaceHome(role) : "/projects"}
                 style={{
                   background: "var(--accent)",
                   color: "#FFFFFF",
@@ -77,11 +75,11 @@ export default function Home() {
                   fontWeight: 500,
                 }}
               >
-                Explore projects <ArrowUpRight size={17} />
+                {role ? "Open your workspace" : "Explore projects"} <ArrowUpRight size={17} />
               </Link>
               <Link
                 className="button secondary"
-                href="/neighbourhood/report"
+                href={role === "admin" || role === "group" ? "/map" : "/neighbourhood/report"}
                 style={{
                   background: "var(--bg-surface)",
                   color: "var(--text-primary)",
@@ -91,7 +89,7 @@ export default function Home() {
                   fontWeight: 500,
                 }}
               >
-                Report an issue
+                {role === "admin" || role === "group" ? "Explore the map" : "Report an issue"}
               </Link>
             </div>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 18 }}>
@@ -109,7 +107,7 @@ export default function Home() {
               borderRadius: 8,
             }}
           >
-            <MapPreview />
+            <LiveMapPreview />
             <div
               style={{
                 padding: "16px 12px 4px",
@@ -135,7 +133,7 @@ export default function Home() {
       </section>
 
       {/* Latest Projects Section */}
-      <section className="container animate-fade-up" style={{ paddingTop: 54, animationDelay: "200ms" }}>
+      <section className="container home-snap-section home-projects-section animate-fade-up" style={{ animationDelay: "200ms" }}>
         <div
           style={{
             display: "flex",
@@ -158,15 +156,15 @@ export default function Home() {
             >
               The latest
             </div>
-            <h2 style={{ fontSize: 28, margin: "8px 0 0", color: "var(--text-primary)" }}>
-              Your city, in progress
+            <h2 className="home-section-title">
+              Your city, <span className="home-serif-accent">in progress</span>
             </h2>
           </div>
           <Link href="/projects" style={{ color: "var(--accent)", fontWeight: 500 }}>
             All projects →
           </Link>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+        <div className="home-project-grid" style={{ display: "grid", gap: 16 }}>
           {projects.map((p, index) => (
             <Link
               className="card animate-fade-up"
@@ -196,7 +194,7 @@ export default function Home() {
               </p>
               <small style={{ color: "var(--text-secondary)" }}>
                 Expected{" "}
-                {new Date(p.expectedEndDate).toLocaleDateString("en-IN", {
+                {new Date(p.expected_end).toLocaleDateString("en-IN", {
                   month: "short",
                   year: "numeric",
                 })}
@@ -238,34 +236,30 @@ export default function Home() {
 
       {/* Stats Section */}
       <section
-        className="container animate-fade-up"
+        className="container home-snap-section home-stats-section animate-fade-up"
         style={{
           animationDelay: "500ms",
-          paddingTop: 58,
-          display: "grid",
-          gridTemplateColumns: "repeat(3,1fr)",
-          gap: 18,
         }}
       >
         <Stat
           icon={<MapPin size={20} />}
-          value={`${projects.length} demo projects`}
+          value={`${projects.length} featured projects`}
           label="See planned and ongoing public works"
         />
         <Stat
           icon={<ShieldCheck size={20} />}
-          value={`${issues.length} demo reports`}
+          value={`${issueResult.count ?? 0} public reports`}
           label="Community counts stay separate from official review"
         />
         <Stat
           icon={<Users size={20} />}
-          value={`${groups.length} approved groups`}
+          value={`${groupResult.count ?? 0} approved groups`}
           label="Local people working on local needs"
         />
       </section>
 
       {/* CTA Section */}
-      <section className="container animate-fade-up" style={{ animationDelay: "600ms", paddingTop: 54, paddingBottom: 82 }}>
+      <section className="container home-snap-section home-cta-section animate-fade-up" style={{ animationDelay: "600ms" }}>
         <div
           className="card"
           style={{
@@ -292,8 +286,8 @@ export default function Home() {
             >
               Make your corner better
             </div>
-            <h2 style={{ fontSize: 24, margin: "8px 0", color: "var(--text-primary)" }}>
-              Notice something? Let’s get it on the map.
+            <h2 className="home-cta-title">
+              Notice something? <span className="home-serif-accent">Let’s get it on the map.</span>
             </h2>
             <p style={{ color: "var(--text-secondary)", margin: 0 }}>
               A clear report helps neighbours and civic teams understand what’s

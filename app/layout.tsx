@@ -1,43 +1,62 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Link from "next/link";
 import { Header } from "@/components/shared/header";
+import { LightWatermark } from "@/components/shared/light-watermark";
 import { ThemeProvider } from "./ThemeProvider"; // Adjust this path based on where you saved ThemeProvider.tsx
+import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
 
 export const metadata: Metadata = {
   title: "CivicSync — Neighbourhood, in the know",
   description: "Public works, local issues, and community action in one transparent place.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const workspaceRole = await getCurrentWorkspaceRole();
+
   return (
     // suppressHydrationWarning is required by next-themes to prevent mismatch errors on load
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <Header />
+          <LightWatermark />
+          <Header workspaceRole={workspaceRole} />
           {children}
-          <footer
-            style={{
-              borderTop: "1px solid var(--border)",
-              padding: "28px 0",
-              marginTop: 72,
-              color: "var(--text-secondary)",
-              fontSize: 13,
-            }}
-          >
-            <div
-              className="container"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 16,
-                flexWrap: "wrap",
-              }}
-            >
-              <span>© 2026 CivicSync · Demo data is clearly labelled</span>
-              <span>Built for more connected neighbourhoods</span>
+          <footer className="site-footer">
+            <div className="container">
+              <div className="site-footer-grid">
+                <div className="site-footer-about">
+                  <Link href="/" className="site-footer-brand">Civic<span>Sync</span></Link>
+                  <p>Follow public works, report local issues, and support community-led action in one place.</p>
+                </div>
+                <nav aria-label="Explore CivicSync" className="site-footer-links">
+                  <h2>Explore</h2>
+                  <Link href="/projects">Public projects</Link>
+                  {workspaceRole === "common" && <Link href="/issues">Neighbourhood issues</Link>}
+                  <Link href="/map">Project map</Link>
+                  {workspaceRole === "common" && <Link href="/neighbourhood">Neighbourhood</Link>}
+                  {workspaceRole === "group" && <Link href="/community-partners">Community partners</Link>}
+                </nav>
+                <nav aria-label="Get involved with CivicSync" className="site-footer-links">
+                  <h2>Get involved</h2>
+                  {workspaceRole === "common" && <Link href="/neighbourhood/report">Report a local issue</Link>}
+                  {workspaceRole === "group" && <Link href="/community-partners/dashboard">Partner workspace</Link>}
+                  <Link href="/sponsorship">Community sponsorship</Link>
+                </nav>
+                <nav aria-label="CivicSync workspaces" className="site-footer-links">
+                  <h2>Workspaces</h2>
+                  {!workspaceRole && <Link href="/auth/sign-in">Sign in</Link>}
+                  {workspaceRole === "common" && <Link href="/neighbourhood">Neighbourhood workspace</Link>}
+                  {workspaceRole === "group" && <Link href="/community-partners/dashboard">Partner dashboard</Link>}
+                  {workspaceRole === "admin" && <Link href="/admin">Admin workspace</Link>}
+                </nav>
+              </div>
+              <div className="site-footer-bottom">
+                <span>© 2026 CivicSync · Demo data is clearly labelled</span>
+                <span>Built for more connected neighbourhoods</span>
+              </div>
             </div>
           </footer>
         </ThemeProvider>

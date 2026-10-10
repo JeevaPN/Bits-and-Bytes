@@ -508,6 +508,16 @@ export async function listPublicCommunityWork(slug: string): Promise<ApiResult<P
   }
 }
 
+export async function listPublicIssueTasksAwaitingConfirmation(issueId: string): Promise<ApiResult<GroupTask[]>> {
+  const client = createClient();
+  if (!client) return fail("UNAVAILABLE", "Supabase is not configured.");
+  const { data, error } = await client.from("community_partner_tasks")
+    .select("id,issue_id,group_id,status,updated_at,confirmation_count")
+    .eq("issue_id", issueId).eq("status", "awaiting_confirmation").limit(20);
+  if (error) return errorResult(error);
+  return ok(((data ?? []) as Row[]).map(mapTask));
+}
+
 export async function publishCommunityTaskUpdate(input: { groupId: string; taskId: string; eventId: string; note: string; publicEvidence?: File }): Promise<ApiResult<{ updateId: string }>> {
   const auth = await getClientAndUser();
   if (!auth.client || !auth.user) return fail(auth.client ? "FORBIDDEN" : "UNAVAILABLE", auth.error ?? "Sign in to continue.");

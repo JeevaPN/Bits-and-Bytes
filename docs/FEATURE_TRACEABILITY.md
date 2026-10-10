@@ -26,7 +26,7 @@
 | CS-019 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Department and jurisdiction scopes for Admin permissions. |
 | CS-020 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Authorized account creation/invitation or approval for government staff as appropriate. |
 | CS-021 | P | PARTIAL | lib/supabase/community-partners.ts; app/community-partners | tests/auth-integrations.test.ts | [GROUP] Social-service group registration/application. |
-| CS-022 | P | PARTIAL | supabase/migrations/202610100006_admin_workflows.sql; app/admin/groups/actions.ts | tests/auth-integrations.test.ts | [ADM] Approve, reject, request more information about or suspend group registrations, with recorded reasons. |
+| CS-022 | P | PARTIAL | supabase/migrations/202610100007_admin_workflows.sql; app/admin/groups/actions.ts | tests/auth-integrations.test.ts | [ADM] Approve, reject, request more information about or suspend group registrations, with recorded reasons. |
 | CS-023 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Only approved group accounts can manage the public group page and accept group tasks. |
 | CS-024 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Common People accounts can act as individual or organization sponsors without creating a fourth primary role. |
 | CS-025 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Permission checks prevent people from modifying records outside their ownership or authority. |
@@ -100,7 +100,7 @@
 | CS-093 | D | NOT_IMPLEMENTED | — | — | [COMMON] Record an issue's category, description, location and observation time. |
 | CS-094 | D | NOT_IMPLEMENTED | — | — | [COMMON] Upload a photo as evidence. |
 | CS-095 | P | NOT_IMPLEMENTED | — | — | [COMMON] Upload a video subject to configured file-size, type and safety limits. |
-| CS-096 | D | PARTIAL | components/map/osm-map.tsx; lib/services/map-server.ts; supabase/migrations/202610100008_public_map_feed.sql | tests/map-coordinates.test.ts | [SYSTEM] Display reported issues on the public map with the correct source and status labels. |
+| CS-096 | D | PARTIAL | components/map/osm-map.tsx; lib/services/map-server.ts; supabase/migrations/202610100009_public_map_feed.sql | tests/map-coordinates.test.ts | [SYSTEM] Display reported issues on the public map with the correct source and status labels. |
 | CS-097 | P | NOT_IMPLEMENTED | — | — | [COMMON] Let users correct a report's location or request a correction after submission. |
 | CS-098 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Record the report source, creation time, evidence references and available location metadata. |
 | CS-099 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Allow reports to remain visible and trackable even when no official project match exists. |

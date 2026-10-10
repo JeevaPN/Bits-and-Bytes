@@ -12,4 +12,9 @@ describe("map coordinate validation", () => {
     expect(validCoordinate(91, 80.23)).toBe(false);
     expect(validCoordinate(13.04, -181)).toBe(false);
   });
+
+  it("accepts zero coordinates and rejects strings rather than coercing them", () => {
+    expect(validCoordinate(0, 0)).toBe(true);
+    expect(validCoordinate("13.04" as unknown as number, 80.23)).toBe(false);
+  });
 });

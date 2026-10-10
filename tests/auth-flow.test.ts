@@ -16,11 +16,24 @@ describe("development email/password authentication", () => {
     expect(fs.existsSync(path.join(root, "app/auth/check-email/page.tsx"))).toBe(false);
   });
 
-  it("preserves password recovery and does not allow signup to select roles", () => {
+  it("preserves password recovery and prevents public signup from assigning Admin", () => {
     const actions = read("app/auth/actions.ts");
     expect(actions).toContain("resetPasswordForEmail");
     expect(actions).toContain("display_name: parsed.data.displayName");
-    expect(actions).not.toContain("primary_role");
+    expect(actions).toContain('z.enum(["common", "group"])');
+    expect(actions).toContain("admin role requires a trusted staff workflow");
+    expect(read("components/auth/auth-forms.tsx")).not.toContain('value="admin"');
+    expect(read("app/auth/sign-up/page.tsx")).toContain("Admin access is provisioned separately");
     expect(read("docs/AUTH_DEVELOPMENT.md")).toContain("Confirm email");
+    expect(read("docs/AUTH_DEVELOPMENT.md")).toContain("Admin access is provisioned separately");
+  });
+
+  it("keeps every runtime public surface on persisted data, not browser fixtures", () => {
+    for (const file of ["app/page.tsx", "components/neighbourhood/dashboard.tsx", "components/neighbourhood/group-directory.tsx", "components/shared/public-projects-page.tsx", "components/shared/public-map-page.tsx", "components/shared/public-sponsorship-page.tsx", "components/community-partners/dashboard.tsx", "components/community-partners/task-board.tsx", "app/community-partners/dashboard/campaigns/page.tsx"]) {
+      expect(read(file)).not.toContain("lib/domain/demo-data");
+      expect(read(file)).not.toContain("lib/mock-api");
+    }
+    expect(read("components/neighbourhood/task-confirmation.tsx")).not.toContain("neighbourhoodMockApi");
+    expect(read("components/neighbourhood/simulated-pledge.tsx")).not.toContain("neighbourhoodMockApi");
   });
 });

@@ -51,6 +51,9 @@ describe("development lifecycle safety", () => {
     expect(read("app/api/health/route.ts")).toContain("relationErrors");
     expect(read("app/api/health/route.ts")).toContain("publicMapReadModel");
     expect(read("app/api/health/route.ts")).toContain("public_sponsorship_campaigns");
+    expect(read("app/api/health/route.ts")).toContain("public_community_groups");
+    expect(read("app/api/health/route.ts")).toContain("coordination_cases");
+    expect(read("app/api/health/route.ts")).toContain("restoration_inspections");
     expect(read("scripts/dev-verify.ps1")).toContain("[ValidateSet('auto','local','remote-dev')]");
   });
 
@@ -77,7 +80,7 @@ describe("development lifecycle safety", () => {
 
   it("keeps ordinary development startup non-destructive", () => {
     const scripts = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
-    expect(scripts.scripts.dev).toBe("next dev");
+    expect(scripts.scripts.dev).toBe("node scripts/dev.mjs");
     expect(scripts.scripts.dev).not.toMatch(/reset|seed|db push/i);
   });
 

@@ -6,13 +6,15 @@ Keep `.env` and `.env.local` local. The setup script uses the pinned project-loc
 npm run dev:setup
 ```
 
-This targets local Supabase, applies migrations, runs the deterministic `supabase/seed.sql`, and starts Next.js. It does not create Auth users.
+This targets local Supabase, applies migrations, runs the deterministic `supabase/seed.sql`, ensures the three demo Auth accounts exist, and starts Next.js. Configure `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` or `.env` for account provisioning; this secret stays server-side. The idempotent account step creates or restores the Admin, Neighbour, and Community Partner demo users and an approved demo partner group. It saves generated login details to the ignored `.cache/demo-accounts.json` file.
 
 Daily startup without data changes:
 
 ```powershell
 npm run dev
 ```
+
+Every `npm run dev:setup` or `npm run dev:setup:remote` run checks the three demo email addresses through Supabase Auth. It creates only missing accounts and leaves existing Auth users, profiles, and passwords untouched. The check requires `SUPABASE_SERVICE_ROLE_KEY`; hosted targets are refused unless the existing remote-development project identity and opt-ins are set. Ordinary `npm run dev` does not modify accounts.
 
 Explicit operations:
 
@@ -23,7 +25,7 @@ npm run dev:verify
 npm run dev:reset -- -ConfirmReset
 ```
 
-Reset is local-only and requires `-ConfirmReset`. Remote migration or seed operations require explicit PowerShell opt-ins. Remote reset is refused. The seed contains labelled development projects, issues, and street segments with stable IDs; it does not fabricate Auth users, official decisions, payments, or real people.
+Reset is local-only and requires `-ConfirmReset`. Remote migration or seed operations require explicit PowerShell opt-ins. Remote reset is refused. The SQL seed contains labelled development projects, issues, and street segments with stable IDs; the separate account initialization step provisions the three explicitly named demo users through Supabase Auth.
 
 For a dedicated hosted development project, set the non-secret project ref and explicit classification after verifying them in the Supabase dashboard. The one-command setup derives the ref from `NEXT_PUBLIC_SUPABASE_URL`, checks it matches, and uses the linked project; it never resets a hosted database:
 
