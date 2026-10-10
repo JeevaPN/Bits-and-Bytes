@@ -26,7 +26,7 @@ export function createEvidenceUploadSignature(userId: string, mimeType: string, 
   const type = "authenticated";
   const params = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}&type=${type}`;
   const signature = crypto.createHash("sha1").update(`${params}${apiSecret}`).digest("hex");
-  return { cloudName, apiKey, timestamp, folder, publicId, type, resourceType: "image", uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/authenticated/upload`, signature, maxBytes, allowedMimeTypes: [...allowedMimeTypes] };
+  return { cloudName, apiKey, timestamp, folder, publicId, type, resourceType: "image", uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, signature, maxBytes, allowedMimeTypes: [...allowedMimeTypes] };
 }
 
 type CloudinaryResource = { public_id?: string; resource_type?: string; type?: string; format?: string; version?: number };
