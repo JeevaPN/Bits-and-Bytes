@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { ApiResult } from "@/lib/contracts/v1";
 import { validCoordinate } from "@/lib/map/coordinates";
+import { logger } from "@/lib/observability/logger";
 
 export type PublicMapRecord = {
   kind: "project" | "issue";
@@ -25,7 +26,7 @@ export async function listPublicMapRecords(): Promise<ApiResult<PublicMapRecord[
     client.from("public_project_map_feed").select("id,slug,title,location,status,latitude,longitude").limit(1000),
     client.from("public_issue_feed").select("id,title,location,review_status,source,urgent,latitude,longitude").limit(1000),
   ]);
-  if (projects.error || issues.error) return failure("Public map data is temporarily unavailable.");
+  if (projects.error || issues.error) { const failed = projects.error || issues.error; logger.error("public map read model unavailable", { route: "/api/map", operation: "read_map_views", code: failed?.code || "DATABASE_ERROR" }); return failure("Public map data is temporarily unavailable. Check that the CivicSync migrations are applied."); }
   const records: PublicMapRecord[] = [];
   for (const row of projects.data ?? []) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);

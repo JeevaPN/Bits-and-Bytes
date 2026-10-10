@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { safeRedirectPath } from "@/lib/auth/redirect";
+import { logger } from "@/lib/observability/logger";
 
 const credentials = z.object({ email: z.string().trim().email(), password: z.string().min(8).max(128) });
 const displayName = z.string().trim().min(2).max(80);
@@ -19,7 +20,7 @@ export async function signUp(_previous: AuthState, formData: FormData): Promise<
 export async function signIn(_previous: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = credentials.safeParse(Object.fromEntries(formData)); if (!parsed.success) return invalid();
   const client = await createClient(); if (!client) return invalid("Authentication is not configured in this environment.");
-  const { error } = await client.auth.signInWithPassword(parsed.data); if (error) return invalid("Sign-in failed. Check your email and password.");
+  const { error } = await client.auth.signInWithPassword(parsed.data); if (error) { logger.warn("sign-in rejected", { route: "/auth/sign-in", operation: "sign_in", code: error.code || error.status?.toString() || "AUTH_ERROR" }); return invalid(error.code === "email_not_confirmed" ? "Confirm your email before signing in, or use Resend confirmation." : "Sign-in failed. Check your email and password."); }
   return { ok: true, message: "Signed in.", redirectTo: safeRedirectPath(String(formData.get("next") || "")) };
 }
 
