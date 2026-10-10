@@ -50,6 +50,8 @@ describe("development lifecycle safety", () => {
     expect(read("app/api/health/route.ts")).toContain("missingRelations");
     expect(read("app/api/health/route.ts")).toContain("relationErrors");
     expect(read("app/api/health/route.ts")).toContain("publicMapReadModel");
+    expect(read("app/api/health/route.ts")).toContain("public_sponsorship_campaigns");
+    expect(read("scripts/dev-verify.ps1")).toContain("[ValidateSet('auto','local','remote-dev')]");
   });
 
   it("verifies actual schema objects after migration history", () => {
