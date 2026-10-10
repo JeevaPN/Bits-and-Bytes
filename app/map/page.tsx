@@ -1,5 +1,2 @@
-import { PublicMapPage } from "@/components/shared/public-map-page";
-
-export default function MapPage() {
-  return <main><PublicMapPage /></main>;
-}
+import { OSMMapLoader } from "@/components/map/osm-map-loader";
+export default function MapPage() { return <main className="container" style={{ paddingTop: 42 }}><div className="eyebrow">Shared map · OpenStreetMap</div><h1>See the work around you</h1><p style={{ color: "var(--muted)" }}>Explore public CivicSync projects and issue observations. OSM supplies the basemap; CivicSync supplies the records and status labels.</p><OSMMapLoader /></main>; }
