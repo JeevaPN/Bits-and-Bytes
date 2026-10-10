@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
+import { workspaceHome } from "@/lib/auth/workspace-access";
 
 const nav = [
   ["Overview", "/admin"],
@@ -10,7 +13,11 @@ const nav = [
   ["Group approvals", "/admin/groups"],
 ] as const;
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const role = await getCurrentWorkspaceRole();
+  if (!role) redirect("/auth/sign-in");
+  if (role !== "admin") redirect(workspaceHome(role));
+
   return (
     <div className="container" style={{ paddingTop: 28 }}>
       <div className="eyebrow">CivicSync · Admin workspace · demo</div>

@@ -1,2 +1,10 @@
-const allowedPaths = new Set(["/neighbourhood", "/neighbourhood/report", "/projects", "/map", "/sponsorship"]);
+const allowedPaths = new Set([
+  "/neighbourhood",
+  "/neighbourhood/report",
+  "/projects",
+  "/map",
+  "/sponsorship",
+  "/admin",
+  "/community-partners/dashboard",
+]);
 export function safeRedirectPath(value: string | null | undefined, fallback = "/neighbourhood") { if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || !allowedPaths.has(value.split("?")[0])) return fallback; return value; }

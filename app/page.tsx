@@ -1,15 +1,21 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
 import { projects, issues, groups } from "@/lib/domain/demo-data";
+import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
+import { workspaceHome } from "@/lib/auth/workspace-access";
 
-export default function Home() {
+export default async function Home() {
+  const role = await getCurrentWorkspaceRole();
+  if (role) redirect(workspaceHome(role));
+
   return (
-    <main style={{ minHeight: "100vh" }}>
+    <main className="home-scroll-pages">
       {/* Hero Section */}
       <section
+        className="home-snap-section home-hero-section"
         style={{
-          padding: "76px 0 82px",
           overflow: "hidden",
           borderBottom: "1px solid var(--border)",
         }}
@@ -120,7 +126,7 @@ export default function Home() {
       </section>
 
       {/* Latest Projects Section */}
-      <section className="container animate-fade-up" style={{ paddingTop: 54, animationDelay: "200ms" }}>
+      <section className="container home-snap-section home-projects-section animate-fade-up" style={{ animationDelay: "200ms" }}>
         <div
           style={{
             display: "flex",
@@ -151,7 +157,7 @@ export default function Home() {
             All projects →
           </Link>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+        <div className="home-project-grid" style={{ display: "grid", gap: 16 }}>
           {projects.map((p, index) => (
             <Link
               className="card animate-fade-up"
@@ -223,13 +229,9 @@ export default function Home() {
 
       {/* Stats Section */}
       <section
-        className="container animate-fade-up"
+        className="container home-snap-section home-stats-section animate-fade-up"
         style={{
           animationDelay: "500ms",
-          paddingTop: 58,
-          display: "grid",
-          gridTemplateColumns: "repeat(3,1fr)",
-          gap: 18,
         }}
       >
         <Stat
@@ -250,7 +252,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="container animate-fade-up" style={{ animationDelay: "600ms", paddingTop: 54, paddingBottom: 82 }}>
+      <section className="container home-snap-section home-cta-section animate-fade-up" style={{ animationDelay: "600ms" }}>
         <div
           className="card"
           style={{

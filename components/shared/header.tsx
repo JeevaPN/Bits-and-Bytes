@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AuthStatus } from "@/components/auth/auth-status";
+import type { Role } from "@/lib/domain/types";
+import { canVisitPath } from "@/lib/auth/workspace-access";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -28,19 +30,97 @@ export function ThemeToggle() {
   );
 }
 const links = [["Projects", "/projects"], ["Map", "/map"], ["Neighbourhood", "/neighbourhood"], ["Community Partners", "/community-partners"], ["Sponsorship", "/sponsorship"], ["Admin", "/admin"]];
-export function Header() {
+export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const visibleLinks = links.filter(([, href]) => canVisitPath(workspaceRole, href));
+  const workspaceLabel = workspaceRole === "admin"
+    ? "Admin"
+    : workspaceRole === "common"
+      ? "Neighbourhood"
+      : workspaceRole === "group"
+        ? "Comm-Partner"
+        : null;
 
-  return <header style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
-    <div className="container" style={{ height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 }}>
-      <Link href="/" style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-.04em", color: "var(--text-primary)" }}>Civic<span style={{ color: "var(--accent)" }}>Sync</span></Link>
-      <nav aria-label="Main navigation" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-        {links.map(([name, href]) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
-          return <Link className={active ? "navlink navlink-active" : "navlink"} href={href} key={href} aria-current={active ? "page" : undefined}>{name}</Link>;
-        })}
-      </nav>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}><ThemeToggle /><AuthStatus /></div>
-    </div>
-  </header>;
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.documentElement.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
+  return (
+    <header className="site-header" style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
+      <div className="container site-header-inner">
+        <div className="site-header-left">
+          <button
+            className="site-menu-trigger"
+            type="button"
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={menuOpen}
+            aria-controls="civicsync-navigation-panel"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X size={23} aria-hidden="true" /> : <Menu size={23} aria-hidden="true" />}
+          </button>
+          <Link href="/" className="site-header-brand">Civic<span>Sync</span></Link>
+        </div>
+        <div className="site-header-actions">
+          {workspaceLabel && <span className="site-workspace-badge" aria-label={`Current workspace: ${workspaceLabel}`}>{workspaceLabel}</span>}
+          <ThemeToggle />
+          <AuthStatus />
+        </div>
+      </div>
+
+      {menuOpen && (
+        <div className="site-menu-overlay">
+          <button
+            className="site-menu-backdrop"
+            type="button"
+            aria-label="Close navigation menu"
+            onClick={() => setMenuOpen(false)}
+          />
+          <aside
+            className="site-menu-panel"
+            id="civicsync-navigation-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="CivicSync navigation"
+          >
+            <div className="site-menu-heading">
+              <span>Navigate</span>
+              <button className="site-menu-close" type="button" aria-label="Close navigation menu" onClick={() => setMenuOpen(false)}>
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
+            <nav className="site-menu-links" aria-label="Main navigation">
+              {visibleLinks.map(([name, href]) => {
+                const active = pathname === href || pathname.startsWith(`${href}/`);
+                return (
+                  <Link
+                    className={active ? "navlink navlink-active" : "navlink"}
+                    href={href}
+                    key={href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {name}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        </div>
+      )}
+    </header>
+  );
 }
