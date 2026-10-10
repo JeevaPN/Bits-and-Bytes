@@ -1,6 +1,6 @@
 # Supabase migration procedure
 
-Migration filenames now have one strictly increasing numeric version: `202610100001` through `202610100008`.
+Migration filenames now have one strictly increasing numeric version: `202610100001` through `202610100009`.
 
 The duplicate `202610100002`/`202610100003` files were renamed into this ordered sequence in the repository. Because a remote Supabase project may already record the old filenames, do not rename rows in `supabase_migrations.schema_migrations` blindly. Before deploying this branch to an existing project, compare that table with the old filenames and either restore the historical names in a deployment-only reconciliation or apply the SQL through a reviewed forward-only migration. A clean project should use the filenames in `supabase/migrations` in lexical order.
 
