@@ -12,6 +12,7 @@ if (Test-Path ".next") { Remove-Item -LiteralPath ".next" -Recurse -Force }
 Write-Host "1/5 Feature traceability"
 Invoke-Checked "npm" @("run", "generate:traceability")
 Invoke-Checked "npm" @("run", "validate:traceability")
+Invoke-Checked "npm" @("run", "validate:migrations")
 Write-Host "2/5 Typecheck"
 Invoke-Checked "npm" @("run", "typecheck")
 Write-Host "3/5 Unit and workflow tests"
