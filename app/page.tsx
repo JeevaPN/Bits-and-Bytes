@@ -3,11 +3,12 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
-import { WorkspacePageDeck } from "@/components/shared/workspace-page-deck";
+import { MapPreview as LiveMapPreview } from "@/components/shared/public-map-page";
+import { workspaceHome } from "@/lib/auth/workspace-access";
 
 export default async function Home() {
   const role = await getCurrentWorkspaceRole();
-  if (role) return <WorkspacePageDeck role={role} />;
+  // The root route is always the public landing page. Workspaces have their own stable routes.
   const client = await createClient();
   const [projectResult, issueResult, groupResult] = client ? await Promise.all([
     client.from("projects").select("id,slug,title,department,location,status,expected_end").eq("is_published", true).order("updated_at", { ascending: false }).limit(3),
@@ -61,7 +62,7 @@ export default async function Home() {
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
               <Link
                 className="button"
-                href="/projects"
+                href={role ? workspaceHome(role) : "/projects"}
                 style={{
                   background: "var(--accent)",
                   color: "#FFFFFF",
@@ -74,11 +75,11 @@ export default async function Home() {
                   fontWeight: 500,
                 }}
               >
-                Explore projects <ArrowUpRight size={17} />
+                {role ? "Open your workspace" : "Explore projects"} <ArrowUpRight size={17} />
               </Link>
               <Link
                 className="button secondary"
-                href="/neighbourhood/report"
+                href={role === "admin" || role === "group" ? "/map" : "/neighbourhood/report"}
                 style={{
                   background: "var(--bg-surface)",
                   color: "var(--text-primary)",
@@ -88,7 +89,7 @@ export default async function Home() {
                   fontWeight: 500,
                 }}
               >
-                Report an issue
+                {role === "admin" || role === "group" ? "Explore the map" : "Report an issue"}
               </Link>
             </div>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 18 }}>
@@ -106,7 +107,7 @@ export default async function Home() {
               borderRadius: 8,
             }}
           >
-            <MapPreview />
+            <LiveMapPreview />
             <div
               style={{
                 padding: "16px 12px 4px",

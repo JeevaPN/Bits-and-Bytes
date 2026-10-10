@@ -7,6 +7,7 @@ import { authErrorMessage } from "@/lib/auth/messages";
 import { cookies } from "next/headers";
 import { DEMO_WORKSPACE_COOKIE } from "@/lib/auth/demo-workspace";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { workspaceHome, workspaceForPath } from "@/lib/auth/workspace-access";
 
 const credentials = z.object({ email: z.string().trim().email(), password: z.string().min(8).max(128) });
 const displayName = z.string().trim().min(2).max(80);
@@ -53,7 +54,7 @@ export async function signUp(_previous: AuthState, formData: FormData): Promise<
   }
   (await cookies()).delete(DEMO_WORKSPACE_COOKIE);
   return data.session
-    ? { ok: true, message: "Account created and signed in.", redirectTo: "/" }
+    ? { ok: true, message: "Account created and signed in.", redirectTo: workspaceHome(selectedWorkspace) }
     : { ok: true, message: "Account created. Sign in with your email and password.", redirectTo: "/auth/sign-in" };
 }
 
@@ -61,8 +62,14 @@ export async function signIn(_previous: AuthState, formData: FormData): Promise<
   const parsed = credentials.safeParse(Object.fromEntries(formData)); if (!parsed.success) return invalid();
   const client = await createClient(); if (!client) return invalid("Authentication is not configured in this environment.");
   const { error } = await client.auth.signInWithPassword(parsed.data); if (error) { logger.warn("sign-in rejected", { route: "/auth/sign-in", operation: "sign_in", code: error.code || error.status?.toString() || "AUTH_ERROR" }); return invalid(error.code === "email_not_confirmed" ? authErrorMessage(error.code) : "Sign-in failed. Check your email and password."); }
+  const { data: { user } } = await client.auth.getUser();
+  const { data: profile } = user ? await client.from("profiles").select("primary_role").eq("id", user.id).maybeSingle() : { data: null };
+  const role = profile?.primary_role === "admin" || profile?.primary_role === "group" ? profile.primary_role : "common";
   (await cookies()).delete(DEMO_WORKSPACE_COOKIE);
-  return { ok: true, message: "Signed in.", redirectTo: safeRedirectPath(String(formData.get("next") || ""), "/") };
+  const requested = safeRedirectPath(String(formData.get("next") || ""), workspaceHome(role));
+  const requestedRole = workspaceForPath(requested);
+  const redirectTo = requestedRole && requestedRole !== role ? workspaceHome(role) : requested;
+  return { ok: true, message: "Signed in.", redirectTo };
 }
 
 export async function signOut(): Promise<AuthState> {

@@ -14,7 +14,7 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
   const [tasks, setTasks] = useState<PartnerTaskDetail[]>([]);
   const [events, setEvents] = useState<Record<string, PartnerPrivateTaskEvent[]>>({});
   const [published, setPublished] = useState<Record<string, PartnerPublishedTaskUpdate[]>>({});
-  const [forms, setForms] = useState<Record<string, { note?: string; evidence?: File; publicNote?: string; publicEvidence?: File; withdrawReason?: string }>>({});
+  const [forms, setForms] = useState<Record<string, { progressNote?: string; progressEvidence?: File; completionNote?: string; completionEvidence?: File; publicNote?: string; publicEvidence?: File; withdrawReason?: string }>>({});
   const [message, setMessage] = useState("Loading partner task board…");
 
   async function reloadTasks(id: string) {
@@ -53,17 +53,17 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
   }
   async function saveProgress(task: PartnerTaskDetail) {
     const form = forms[task.id];
-    if (!form?.note?.trim()) { setMessage("Add a progress note first."); return; }
-    const result = await communityPartnersApi.postProgress({ taskId: task.id, note: form.note, evidence: form.evidence ?? null });
+    if (!form?.progressNote?.trim()) { setMessage("Add a progress note first."); return; }
+    const result = await communityPartnersApi.postProgress({ taskId: task.id, note: form.progressNote, evidence: form.progressEvidence ?? null });
     setMessage(result.ok ? "Progress and private evidence saved." : result.error.message);
-    if (result.ok) { patchForm(task.id, { note: "", evidence: undefined }); await reloadTasks(groupId); }
+    if (result.ok) { patchForm(task.id, { progressNote: "", progressEvidence: undefined }); await reloadTasks(groupId); }
   }
   async function submitCompletion(task: PartnerTaskDetail) {
     const form = forms[task.id];
-    if (!form?.note?.trim() || !form.evidence) { setMessage("Add a completion note and evidence image."); return; }
-    const result = await communityPartnersApi.submitCompletion({ taskId: task.id, note: form.note, evidence: form.evidence });
+    if (!form?.completionNote?.trim() || !form.completionEvidence) { setMessage("Add a completion note and evidence image."); return; }
+    const result = await communityPartnersApi.submitCompletion({ taskId: task.id, note: form.completionNote, evidence: form.completionEvidence });
     setMessage(result.ok ? "Completion claim submitted for independent community review." : result.error.message);
-    if (result.ok) { patchForm(task.id, { note: "", evidence: undefined }); await reloadTasks(groupId); }
+    if (result.ok) { patchForm(task.id, { completionNote: "", completionEvidence: undefined }); await reloadTasks(groupId); }
   }
   async function withdraw(task: PartnerTaskDetail) {
     const reason = forms[task.id]?.withdrawReason?.trim();
@@ -98,11 +98,11 @@ export function PartnerTaskBoard({ embedded = false, refreshKey = 0, preferredGr
       <div className="eyebrow">{task.status.replaceAll("_", " ")} · {task.urgent ? "Urgent · " : ""}{task.category.replaceAll("_", " ")}</div>
       <h2>{task.title}</h2><p>{task.description}</p><p>📍 {task.location} · Official issue review: {task.reviewStatus}</p>
       {task.status !== "awaiting_confirmation" && ["adopted", "in_progress", "reopened"].includes(task.status) && <>
-        <label className="label">Progress note<textarea className="field" value={forms[task.id]?.note ?? ""} onChange={(event) => patchForm(task.id, { note: event.target.value })}/></label>
-        <label className="label">Private progress evidence<input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => patchForm(task.id, { evidence: event.target.files?.[0] })}/></label>
+        <label className="label">Progress note<textarea className="field" value={forms[task.id]?.progressNote ?? ""} onChange={(event) => patchForm(task.id, { progressNote: event.target.value })}/></label>
+        <label className="label">Private progress evidence<input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => patchForm(task.id, { progressEvidence: event.target.files?.[0] })}/></label>
         <button className="button secondary" onClick={() => void saveProgress(task)}>Save progress</button>
-        <label className="label" style={{ marginTop: 16 }}>Completion note<textarea className="field" value={forms[task.id]?.note ?? ""} onChange={(event) => patchForm(task.id, { note: event.target.value })}/></label>
-        <label className="label">Completion evidence<input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => patchForm(task.id, { evidence: event.target.files?.[0] })}/></label>
+        <label className="label" style={{ marginTop: 16 }}>Completion note<textarea className="field" value={forms[task.id]?.completionNote ?? ""} onChange={(event) => patchForm(task.id, { completionNote: event.target.value })}/></label>
+        <label className="label">Completion evidence<input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => patchForm(task.id, { completionEvidence: event.target.files?.[0] })}/></label>
         <button className="button" onClick={() => void submitCompletion(task)}>Submit completed work</button>
       </>}
       {task.status === "awaiting_confirmation" && <>
