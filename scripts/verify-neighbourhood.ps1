@@ -7,13 +7,18 @@ function Invoke-Checked([string]$Command, [string[]]$Arguments) {
 }
 
 Write-Host "CivicSync Neighbourhood verification"
-Write-Host "1/4 Typecheck"
+Write-Host "Cleaning generated Next.js output"
+if (Test-Path ".next") { Remove-Item -LiteralPath ".next" -Recurse -Force }
+Write-Host "1/5 Feature traceability"
+Invoke-Checked "npm" @("run", "generate:traceability")
+Invoke-Checked "npm" @("run", "validate:traceability")
+Write-Host "2/5 Typecheck"
 Invoke-Checked "npm" @("run", "typecheck")
-Write-Host "2/4 Unit and workflow tests"
+Write-Host "3/5 Unit and workflow tests"
 Invoke-Checked "npm" @("run", "test")
-Write-Host "3/4 Lint"
+Write-Host "4/5 Lint"
 Invoke-Checked "npm" @("run", "lint")
-Write-Host "4/4 Production build"
+Write-Host "5/5 Production build"
 if (Test-Path ".next") { Remove-Item -LiteralPath ".next" -Recurse -Force }
 try {
   Invoke-Checked "npm" @("run", "build")
