@@ -20,6 +20,8 @@ if ($Target -eq 'local') { & npx.cmd --no-install supabase db query --local --fi
 if ($LASTEXITCODE -ne 0) { throw 'Database migration history completed, but CivicSync schema/read-model verification failed. Setup stopped before seeding or app startup.' }
 & powershell -ExecutionPolicy Bypass -File ./scripts/dev-seed.ps1 -Target $Target
 if ($LASTEXITCODE -ne 0) { throw 'Development seed failed. Setup stopped and the application was not started.' }
+node scripts/create-demo-accounts.mjs
+if ($LASTEXITCODE -ne 0) { throw 'Demo account initialization failed. Add/verify SUPABASE_SERVICE_ROLE_KEY and rerun setup; the application was not started.' }
 if ($StartApp) {
   Write-Host 'Setup complete. Starting CivicSync and waiting for readiness.' -ForegroundColor Green
   $process = Start-Process -FilePath 'npm.cmd' -ArgumentList @('run','dev') -NoNewWindow -PassThru

@@ -475,6 +475,181 @@ body:has(.auth-page)::after {
     font-size: 12px;
   }
 }
+
+/* Map page: keep the data controls and OSM canvas composed as one tool. */
+.osm-map {
+  display: grid;
+  gap: 14px;
+  color: var(--text-primary);
+}
+
+.osm-map-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 210px auto;
+  gap: 14px !important;
+  align-items: end !important;
+  margin-bottom: 0 !important;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+
+.osm-map-toolbar .label {
+  display: grid;
+  gap: 7px;
+  margin: 0 !important;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.osm-map-toolbar .field {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-color: var(--border);
+  background: var(--bg-base);
+  font-size: 14px;
+}
+
+.osm-map-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-surface));
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.osm-map > .card[role="status"],
+.osm-map > .card[role="alert"] {
+  margin: 0 !important;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.osm-map-canvas {
+  height: clamp(380px, 58vh, 620px) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 30px -24px rgba(25, 43, 35, 0.55);
+}
+
+.osm-map-canvas .leaflet-control-zoom,
+.osm-map-canvas .leaflet-control-layers,
+.osm-map-canvas .leaflet-bar a,
+.osm-map-canvas .leaflet-bar button {
+  border-color: #d9dfd8;
+  background-color: #fffefa;
+  color: #26372f;
+}
+
+.osm-map-canvas .leaflet-control-zoom,
+.osm-map-canvas .leaflet-control-attribution {
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.osm-map-canvas .leaflet-control-attribution {
+  background: rgba(255, 254, 250, 0.9);
+  font-size: 10px;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] {
+  margin: 0 !important;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] > strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 8px 8px 0;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-base);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] > p {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px !important;
+  line-height: 1.5;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] ul {
+  display: grid;
+  gap: 0;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.osm-map > .card[style*="margin-top: 12px"] li {
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .osm-map {
+    gap: 10px;
+  }
+
+  .osm-map-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: 10px !important;
+    padding: 12px;
+  }
+
+  .osm-map-search {
+    grid-column: 1 / -1;
+  }
+
+  .osm-map-filter .field {
+    width: 100%;
+  }
+
+  .osm-map-count {
+    min-height: 40px;
+    width: 100%;
+    justify-content: center;
+    padding-inline: 9px;
+    font-size: 12px;
+  }
+
+  .osm-map-canvas {
+    height: min(62vh, 480px) !important;
+    min-height: 360px;
+  }
+
+  .osm-map > .card[style*="margin-top: 12px"] {
+    padding: 16px;
+  }
+}
 a.card {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -1492,3 +1667,4 @@ html:has(.workspace-scroll-deck) {
     padding-inline: 8px;
   }
 }
+

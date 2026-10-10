@@ -37,7 +37,6 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
   const sectionForPath: Record<string, string> = {
     "/projects": "public-projects",
     "/issues": "public-issues",
-    "/map": "project-map",
     "/sponsorship": "sponsorship",
     "/admin": "workspace",
     "/neighbourhood": "workspace",
@@ -117,7 +116,7 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
             <nav className="site-menu-links" aria-label="Main navigation">
               {visibleLinks.map(([name, href]) => {
                 const active = pathname === href || pathname.startsWith(`${href}/`);
-                const destination = onUnifiedHome && sectionForPath[href] ? `/#${sectionForPath[href]}` : href;
+                const destination = onUnifiedHome && href !== "/map" && sectionForPath[href] ? `/#${sectionForPath[href]}` : href;
                 return (
                   <Link
                     className={active ? "navlink navlink-active" : "navlink"}
