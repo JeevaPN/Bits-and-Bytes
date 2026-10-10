@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use client";
 import "leaflet/dist/leaflet.css";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap, Marker } from "react-leaflet";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { PublicMapRecord } from "@/lib/services/map-server";
+import { listPublicMapRecords } from "@/lib/services/map-server";
 import { validCoordinate } from "@/lib/map/coordinates";
 
 type MapItem = PublicMapRecord;
@@ -100,17 +102,14 @@ export function OSMMap() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
     setBusy(true); setError("");
-    fetch("/api/map", { cache: "no-store", signal: controller.signal })
-      .then(async (response) => {
-        const result = await response.json() as { ok: boolean; data?: MapItem[]; error?: { message: string } };
-        if (!response.ok || !result.ok) throw new Error(result.error?.message || "Public map data is unavailable.");
-        setRecords(result.data ?? []);
-      })
-      .catch((reason: unknown) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Public map data is unavailable."); })
-      .finally(() => { if (!controller.signal.aborted) setBusy(false); });
-    return () => controller.abort();
+    let active = true;
+    void listPublicMapRecords().then((result) => {
+      if (!active) return;
+      if (result.ok) setRecords(result.data);
+      else setError(result.error.message);
+    }).finally(() => { if (active) setBusy(false); });
+    return () => { active = false; };
   }, [reloadKey]);
 
   const items = useMemo(() => {

@@ -1,6 +1,6 @@
-"use server";
+"use client";
 
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 export async function createCoordinationCase(input: { title: string; projectIds: string[]; segmentIds: string[]; reason: string }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (input.title.trim().length < 3 || input.reason.trim().length < 3 || input.projectIds.length === 0 || input.projectIds.some((id) => !/^[0-9a-f-]{36}$/i.test(id)) || input.segmentIds.some((id) => !/^[0-9a-f-]{36}$/i.test(id))) return { ok: false, error: "Provide a title, database project IDs, and a conflict reason." };

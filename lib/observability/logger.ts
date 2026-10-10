@@ -1,5 +1,3 @@
-import "server-only";
-
 type Context = { requestId?: string; route?: string; userId?: string; operation?: string; code?: string };
 
 function write(level: "info" | "warn" | "error", message: string, context: Context = {}) {

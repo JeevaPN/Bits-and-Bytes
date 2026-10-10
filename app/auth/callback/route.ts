@@ -1,5 +1,0 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { safeRedirectPath } from "@/lib/auth/redirect";
-import { logger } from "@/lib/observability/logger";
-export async function GET(request: Request) { const url = new URL(request.url); const code = url.searchParams.get("code"); const client = await createClient(); if (!client || !code) { logger.warn("auth callback missing configuration or code", { route: "/auth/callback", operation: "exchange_code", code: !client ? "AUTH_NOT_CONFIGURED" : "CALLBACK_CODE_MISSING" }); return NextResponse.redirect(new URL("/auth/sign-in?error=callback", url.origin)); } const { error } = await client.auth.exchangeCodeForSession(code); if (error) logger.warn("auth callback exchange rejected", { route: "/auth/callback", operation: "exchange_code", code: error.code || "CALLBACK_EXCHANGE_FAILED" }); return NextResponse.redirect(new URL(error ? "/auth/sign-in?error=callback" : safeRedirectPath(url.searchParams.get("next")), url.origin)); }

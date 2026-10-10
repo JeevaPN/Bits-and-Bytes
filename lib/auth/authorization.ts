@@ -1,11 +1,11 @@
-import { createClient, getServerUser } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/browser";
 import type { Role } from "@/lib/domain/types";
-import { DEMO_WORKSPACE_COOKIE, isDemoWorkspace } from "@/lib/auth/demo-workspace";
 
 export async function getCurrentProfile() {
-  const client = await createClient(); const user = await getServerUser();
-  if (!client || !user) return null;
+  const client = createClient();
+  if (!client) return null;
+  const { data: { user }, error: authError } = await client.auth.getUser();
+  if (authError || !user) return null;
   const { data } = await client.from("profiles").select("id,display_name,primary_role").eq("id", user.id).maybeSingle();
   return data as { id: string; display_name: string; primary_role: Role } | null;
 }
@@ -19,14 +19,11 @@ export async function requireRole(roles: Role[]) {
 
 /** The saved account role takes priority over any previous demo session. */
 export async function getCurrentWorkspaceRole(): Promise<Role | null> {
-  const demoWorkspace = (await cookies()).get(DEMO_WORKSPACE_COOKIE)?.value;
-  const demoRole = isDemoWorkspace(demoWorkspace) ? demoWorkspace : null;
-
-  const client = await createClient();
-  if (!client) return demoRole;
+  const client = createClient();
+  if (!client) return null;
 
   const { data: { user } } = await client.auth.getUser();
-  if (!user) return demoRole;
+  if (!user) return null;
 
   const { data: profile } = await client
     .from("profiles")
@@ -45,4 +42,27 @@ export async function getCurrentWorkspaceRole(): Promise<Role | null> {
     .limit(1);
 
   return memberships?.length ? "group" : "common";
+}
+
+export async function requireAdmin() {
+  const supabase = createClient();
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("Admin sign-in is required.");
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("primary_role,display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error) throw new Error("Could not verify the account role.");
+  if (profile?.primary_role !== "admin") throw new Error("Only signed-in Admin accounts can perform this action.");
+  return { supabase, user, profile };
+}
+
+export async function requireCurrentUser() {
+  const client = createClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data: { user }, error } = await client.auth.getUser();
+  if (error || !user) throw new Error("AUTH_REQUIRED");
+  return user;
 }

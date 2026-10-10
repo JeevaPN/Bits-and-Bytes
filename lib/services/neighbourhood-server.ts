@@ -1,9 +1,9 @@
-import "server-only";
 import { z } from "zod";
 import type { ApiResult, CreateIssueInput } from "@/lib/contracts/v1";
 import type { GroupTask, Issue } from "@/lib/domain/types";
 import { issueSchema } from "@/lib/validation/issue";
-import { createClient, requireServerUser } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/browser";
+import { requireCurrentUser as requireServerUser } from "@/lib/auth/authorization";
 
 function failure<T>(message: string, code: "VALIDATION" | "CONFLICT" | "FORBIDDEN" | "NOT_FOUND" | "UNAVAILABLE" = "UNKNOWN" as never): ApiResult<T> { return { ok: false, error: { code, message } }; }
 export function mapIssue(row: Record<string, unknown>): Issue { return { id: String(row.id), title: String(row.title), description: String(row.description), category: row.category as Issue["category"], location: String(row.location), latitude: Number(row.latitude), longitude: Number(row.longitude), observedAt: String(row.observed_at), createdAt: String(row.created_at), verificationCount: Number(row.verification_count || 0), reviewStatus: row.review_status as Issue["reviewStatus"], urgent: Boolean(row.urgent), source: row.source as Issue["source"] }; }

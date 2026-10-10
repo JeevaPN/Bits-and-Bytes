@@ -1,5 +1,3 @@
-import "server-only";
-
 /** Names only: never return or log environment values. */
 export const environmentVariableNames = {
   requiredForDatabase: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],

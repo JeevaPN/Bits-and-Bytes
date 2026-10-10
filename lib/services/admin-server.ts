@@ -1,6 +1,5 @@
-import "server-only";
-import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { createClient } from "@/lib/supabase/browser";
+import { requireAdmin } from "@/lib/auth/authorization";
 import type { ApiResult } from "@/lib/contracts/v1";
 
 export type AdminOverviewData = {
@@ -12,7 +11,7 @@ export type AdminOverviewData = {
 };
 
 export async function getAdminOverview(): Promise<ApiResult<AdminOverviewData>> {
-  const client = await createClient();
+  const client = createClient();
   if (!client) return { ok: false, error: { code: "UNAVAILABLE", message: "Supabase is not configured." } };
   try { await requireAdmin(); } catch (error) { return { ok: false, error: { code: "FORBIDDEN", message: error instanceof Error ? error.message : "Admin access required." } }; }
   const [projects, issues, inspections] = await Promise.all([

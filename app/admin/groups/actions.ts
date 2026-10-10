@@ -1,6 +1,6 @@
-"use server";
+"use client";
 
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 export async function reviewGroupApplication(input: { groupId: string; action: "approve" | "reject" | "more_info" | "suspend"; reason: string }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!/^[0-9a-f-]{36}$/i.test(input.groupId)) return { ok: false, error: "This application is not a database record." };

@@ -4,17 +4,17 @@ import Link from "next/link";
 import { Header } from "@/components/shared/header";
 import { LightWatermark } from "@/components/shared/light-watermark";
 import { ThemeProvider } from "./ThemeProvider"; // Adjust this path based on where you saved ThemeProvider.tsx
-import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
+import { WorkspaceFooterLinks } from "@/components/auth/workspace-footer-links";
 
 export const metadata: Metadata = {
   title: "CivicSync — Neighbourhood, in the know",
   description: "Public works, local issues, and community action in one transparent place.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const workspaceRole = await getCurrentWorkspaceRole();
+  const workspaceRole = null;
 
   return (
     // suppressHydrationWarning is required by next-themes to prevent mismatch errors on load
@@ -36,21 +36,16 @@ export default async function RootLayout({
                   <Link href="/projects">Public projects</Link>
                   <Link href="/issues">Public issue reports</Link>
                   <Link href="/map">Project map</Link>
-                  {workspaceRole === "common" && <Link href="/neighbourhood">Neighbourhood</Link>}
-                  {workspaceRole === "group" && <Link href="/community-partners">Community partners</Link>}
+                  <WorkspaceFooterLinks section="explore" />
                 </nav>
                 <nav aria-label="Get involved with CivicSync" className="site-footer-links">
                   <h2>Get involved</h2>
-                  {workspaceRole === "common" && <Link href="/neighbourhood/report">Report a local issue</Link>}
-                  {workspaceRole === "group" && <Link href="/community-partners/dashboard">Partner workspace</Link>}
+                  <WorkspaceFooterLinks section="involved" />
                   <Link href="/sponsorship">Community sponsorship</Link>
                 </nav>
                 <nav aria-label="CivicSync workspaces" className="site-footer-links">
                   <h2>Workspaces</h2>
-                  {!workspaceRole && <Link href="/auth/sign-in">Sign in</Link>}
-                  {workspaceRole === "common" && <Link href="/neighbourhood">Neighbourhood workspace</Link>}
-                  {workspaceRole === "group" && <Link href="/community-partners/dashboard">Partner dashboard</Link>}
-                  {workspaceRole === "admin" && <Link href="/admin">Admin workspace</Link>}
+                  <WorkspaceFooterLinks section="workspaces" />
                 </nav>
               </div>
               <div className="site-footer-bottom">

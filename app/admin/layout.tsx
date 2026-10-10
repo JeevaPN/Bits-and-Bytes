@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 const nav = [
   ["Overview", "/admin"],
@@ -12,8 +14,17 @@ const nav = [
   ["Group approvals", "/admin/groups"],
 ] as const;
 
-export default async function AdminLayout({ children }: { children: ReactNode }) {
-  try { await requireAdmin(); } catch { redirect("/auth/sign-in?next=%2Fadmin"); }
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
+  useEffect(() => {
+    let active = true;
+    requireAdmin()
+      .then(() => { if (active) setAuthorized(true); })
+      .catch(() => { if (active) router.replace("/auth/sign-in?next=%2Fadmin"); });
+    return () => { active = false; };
+  }, [router]);
+  if (!authorized) return <div className="container" role="status" style={{ paddingTop: 28 }}>Checking Admin access…</div>;
   return (
     <div className="container" style={{ paddingTop: 28 }}>
       <div className="eyebrow">CivicSync · Admin workspace</div>

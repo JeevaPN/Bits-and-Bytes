@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { AuthProfileName, AuthStatus } from "@/components/auth/auth-status";
 import type { Role } from "@/lib/domain/types";
 import { canVisitPath } from "@/lib/auth/workspace-access";
+import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
+import { createClient } from "@/lib/supabase/browser";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -33,7 +35,8 @@ const links = [["Projects", "/projects"], ["Open Issues", "/issues"], ["Map", "/
 export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const visibleLinks = links.filter(([, href]) => canVisitPath(workspaceRole, href));
+  const [activeRole, setActiveRole] = useState(workspaceRole);
+  const visibleLinks = links.filter(([, href]) => canVisitPath(activeRole, href));
   const sectionForPath: Record<string, string> = {
     "/projects": "public-projects",
     "/issues": "public-issues",
@@ -42,14 +45,34 @@ export function Header({ workspaceRole }: { workspaceRole: Role | null }) {
     "/neighbourhood": "workspace",
     "/community-partners": "workspace",
   };
-  const onUnifiedHome = pathname === "/" && workspaceRole !== null;
-  const workspaceLabel = workspaceRole === "admin"
+  const onUnifiedHome = pathname === "/" && activeRole !== null;
+  const workspaceLabel = activeRole === "admin"
     ? "Admin"
-    : workspaceRole === "common"
+    : activeRole === "common"
       ? "Neighbourhood"
-      : workspaceRole === "group"
+      : activeRole === "group"
         ? "Comm-Partner"
         : null;
+
+  useEffect(() => {
+    let active = true;
+    const client = createClient();
+    if (!client) return;
+    const refreshRole = () => {
+      void getCurrentWorkspaceRole().then((role) => {
+        if (active) setActiveRole(role);
+      });
+    };
+    refreshRole();
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
+      if (!session) setActiveRole(null);
+      else refreshRole();
+    });
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;

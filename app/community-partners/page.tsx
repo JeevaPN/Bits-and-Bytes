@@ -26,7 +26,7 @@ export default function CommunityPartnersPage() {
     <p><Link className="button" href="/community-partners/apply">Apply to become a partner</Link></p>
     {status && <p role="status" className="card">{status}</p>}
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(270px,1fr))", gap: 16, marginTop: 25 }}>
-      {groups.map((group) => <Link className="card" href={`/community-partners/${group.slug}`} key={group.id}>
+      {groups.map((group) => <Link className="card" href={`/community-partners/details?slug=${encodeURIComponent(group.slug)}`} key={group.id}>
         <div className="eyebrow">Approved partner</div><h2>{group.name}</h2>
         <p style={{ color: "var(--muted)", lineHeight: 1.6 }}>{group.description}</p>
         <p>📍 {group.area}</p><p>Suitable work: {group.capabilities.map((item) => item.replaceAll("_", " ")).join(", ")}</p>

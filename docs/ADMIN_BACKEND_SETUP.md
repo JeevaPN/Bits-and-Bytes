@@ -28,7 +28,7 @@ Do not expose an Admin role choice in public sign-up. Database functions and wri
 
 ## Configure the app
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the local environment or deployment settings. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; the current Admin workflows do not need it.
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the local environment or deployment settings. The static app uses only the public browser client; `SUPABASE_SERVICE_ROLE_KEY` is only for trusted local provisioning scripts and must never be included in the app build.
 
 ## Current limits
 

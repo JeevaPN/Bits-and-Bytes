@@ -21,8 +21,8 @@
 | CS-014 | D | PARTIAL | lib/domain/types.ts; supabase/migrations/202610100001_core.sql | tests/auth-integrations.test.ts | [SYSTEM] Three primary role types: Admin, Common People and Social Service Groups. |
 | CS-015 | D | NOT_IMPLEMENTED | — | — | [SYSTEM] Separate role-aware dashboard/navigation for each primary role. |
 | CS-016 | D | NOT_IMPLEMENTED | — | — | [SYSTEM] Public project/QR browsing without account creation. |
-| CS-017 | P | PARTIAL | app/auth; middleware.ts; lib/supabase/server.ts | tests/auth-integrations.test.ts | [COMMON] Account registration, sign-in, sign-out and account recovery. |
-| CS-018 | P | PARTIAL | lib/supabase/admin-auth.ts; lib/auth/authorization.ts; app/admin/layout.tsx | tests/auth-integrations.test.ts; e2e/public-discovery.spec.ts | [SYSTEM] Server-side authorization for protected actions; hiding buttons is not sufficient. |
+| CS-017 | P | PARTIAL | app/auth; lib/supabase/browser.ts | tests/auth-integrations.test.ts | [COMMON] Account registration, sign-in, sign-out and account recovery using browser-persisted sessions. |
+| CS-018 | P | PARTIAL | lib/auth/authorization.ts; app/admin/layout.tsx; Supabase RLS and Admin RPCs | tests/auth-integrations.test.ts; e2e/public-discovery.spec.ts | [SYSTEM] Database-enforced authorization for protected actions; client-side guards only control presentation. |
 | CS-019 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Department and jurisdiction scopes for Admin permissions. |
 | CS-020 | P | NOT_IMPLEMENTED | — | — | [SYSTEM] Authorized account creation/invitation or approval for government staff as appropriate. |
 | CS-021 | P | PARTIAL | lib/supabase/community-partners.ts; app/community-partners | tests/auth-integrations.test.ts | [GROUP] Social-service group registration/application. |

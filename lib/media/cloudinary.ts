@@ -1,4 +1,3 @@
-import "server-only";
 import crypto from "node:crypto";
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);

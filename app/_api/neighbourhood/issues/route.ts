@@ -1,0 +1,9 @@
+import { NextResponse } from "next/server";
+import { createIssueForCurrentUser, listPublicIssues } from "@/lib/services/neighbourhood-server";
+import { logger } from "@/lib/observability/logger";
+export const dynamic = 'force-static';
+export async function GET(request: Request) { const url = new URL(request.url); const urgent = url.searchParams.get("urgent"); const result = await listPublicIssues({ q: url.searchParams.get("q") || undefined, category: url.searchParams.get("category") || undefined, reviewStatus: url.searchParams.get("reviewStatus") || undefined, source: url.searchParams.get("source") || undefined, urgent: urgent === null ? undefined : urgent === "true", page: Number(url.searchParams.get("page") || 1), pageSize: Number(url.searchParams.get("pageSize") || 20) }); return NextResponse.json(result, { status: result.ok ? 200 : 503 }); }
+export async function POST(request: Request) { const requestId = request.headers.get("x-request-id") || crypto.randomUUID(); let body: unknown; try { body = await request.json(); } catch { return NextResponse.json({ ok: false, error: { code: "VALIDATION", message: "Invalid JSON request.", requestId } }, { status: 400, headers: { "x-request-id": requestId } }); } const result = await createIssueForCurrentUser(body as never); if (!result.ok && !["VALIDATION", "FORBIDDEN", "CONFLICT"].includes(result.error.code)) logger.error("issue creation failed", { requestId, route: "/api/neighbourhood/issues", operation: "create_issue", code: result.error.code }); return NextResponse.json(result, { status: result.ok ? 201 : result.error.code === "FORBIDDEN" ? 401 : result.error.code === "CONFLICT" ? 409 : result.error.code === "UNAVAILABLE" ? 503 : 422, headers: { "x-request-id": requestId } }); }
+export function generateStaticParams() {
+  return [];
+}

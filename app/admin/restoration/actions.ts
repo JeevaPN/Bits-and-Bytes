@@ -1,6 +1,6 @@
-"use server";
+"use client";
 
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 type InspectionStatus = "inspection_due" | "passed" | "defect_found" | "remediation" | "reinspection_due";
 

@@ -1,6 +1,6 @@
-"use server";
+"use client";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/browser";
 import type { AdminDecision } from "@/lib/domain/admin";
 
 type SaveIssueReviewInput = {
@@ -18,7 +18,7 @@ export async function saveIssueReview(input: SaveIssueReviewInput): Promise<{ ok
     return { ok: false, error: "Choose another database issue as the original report." };
   }
 
-  const supabase = await createClient();
+  const supabase = createClient();
   if (!supabase) return { ok: false, error: "Supabase is not configured for this deployment." };
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return { ok: false, error: "Sign in with an Admin account before recording a decision." };

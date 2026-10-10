@@ -9,7 +9,7 @@ export function ProjectForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     const input: CreateProjectInput = { title: String(data.title ?? ""), description: String(data.description ?? ""), workType: String(data.workType ?? ""), department: String(data.department ?? ""), contractor: String(data.contractor ?? ""), location: String(data.location ?? ""), latitude: Number(data.latitude), longitude: Number(data.longitude), ward: String(data.ward ?? ""), startDate: String(data.startDate ?? ""), expectedEndDate: String(data.expectedEndDate ?? ""), status: data.status as CreateProjectInput["status"], budget: data.budget ? Number(data.budget) : undefined, published: data.published === "on", knownClosure: String(data.knownClosure ?? "") || undefined };
-    const result = await createProject(input); setBusy(false); setMessage(result.ok ? `Project saved: ${input.title}.` : result.error); if (result.ok) router.push(`/projects/${result.slug}`);
+    const result = await createProject(input); setBusy(false); setMessage(result.ok ? `Project saved: ${input.title}.` : result.error); if (result.ok) router.push(`/projects/detail?slug=${encodeURIComponent(result.slug)}`);
   }
   return <form onSubmit={submit} className="card" style={{ maxWidth: 820 }}>
     <p style={{ marginTop: 0, color: "var(--muted)" }}>Project publication is recorded in the authorized staff workflow.</p>

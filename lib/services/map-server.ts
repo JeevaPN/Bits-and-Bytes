@@ -1,5 +1,4 @@
-import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/browser";
 import type { ApiResult } from "@/lib/contracts/v1";
 import { validCoordinate } from "@/lib/map/coordinates";
 import { logger } from "@/lib/observability/logger";
@@ -20,7 +19,7 @@ export type PublicMapRecord = {
 const failure = (message: string): ApiResult<PublicMapRecord[]> => ({ ok: false, error: { code: "UNAVAILABLE", message } });
 
 export async function listPublicMapRecords(): Promise<ApiResult<PublicMapRecord[]>> {
-  const client = await createClient();
+  const client = createClient();
   if (!client) return failure("Supabase is not configured.");
   const projects = await client.from("public_project_map_feed").select("id,slug,title,location,status,latitude,longitude").limit(1000);
   if (projects.error) { logger.error("public project map read model unavailable", { route: "/api/map", operation: "read_public_project_map_feed", code: `${projects.error.code || "DATABASE_ERROR"}:${projects.error.message.slice(0, 180)}` }); return failure("Public project map data is unavailable. Check the public_project_map_feed view and PostgREST schema cache."); }
@@ -31,11 +30,11 @@ export async function listPublicMapRecords(): Promise<ApiResult<PublicMapRecord[
   const issueRows = issues.data ?? [];
   for (const row of projectRows) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);
-    if (validCoordinate(latitude, longitude)) records.push({ kind: "project", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.status), href: `/projects/${row.slug}` });
+    if (validCoordinate(latitude, longitude)) records.push({ kind: "project", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.status), href: `/projects/detail?slug=${encodeURIComponent(String(row.slug))}` });
   }
   for (const row of issueRows) {
     const latitude = Number(row.latitude); const longitude = Number(row.longitude);
-    if (validCoordinate(latitude, longitude)) records.push({ kind: "issue", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.review_status), source: String(row.source), urgent: Boolean(row.urgent), href: `/neighbourhood/issues/${row.id}` });
+    if (validCoordinate(latitude, longitude)) records.push({ kind: "issue", id: String(row.id), title: String(row.title), latitude, longitude, location: String(row.location), status: String(row.review_status), source: String(row.source), urgent: Boolean(row.urgent), href: `/neighbourhood/issues/details?id=${encodeURIComponent(String(row.id))}` });
   }
   return { ok: true, data: records.sort((a, b) => a.title.localeCompare(b.title)) };
 }

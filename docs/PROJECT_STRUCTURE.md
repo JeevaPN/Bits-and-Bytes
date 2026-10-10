@@ -119,8 +119,7 @@ Bits-and-Bytes/
 | `lib/mock-api/community-partners.ts` | Mock implementation of the frozen Community Partners API; Vineel owns it. |
 | `lib/mock-api/neighbourhood.ts` | Mock implementation of the frozen Neighbourhood API; Shuvam owns it. |
 | `lib/validation/issue.ts` | Zod validation constraints for report fields. |
-| `lib/supabase/browser.ts` | Creates browser Supabase client when env values exist. |
-| `lib/supabase/server.ts` | Creates cookie-aware server Supabase client when env values exist. |
+| `lib/supabase/browser.ts` | Creates the Supabase JS browser client with local-storage session persistence. |
 | `supabase/migrations/202610100001_core.sql` | Initial Postgres/PostGIS entities, indexes, constraints, and RLS policies. |
 | `.env.example` | Lists Supabase environment variable names without credentials. |
 | `package.json` | Defines framework/dependencies and lint/typecheck/build commands. |

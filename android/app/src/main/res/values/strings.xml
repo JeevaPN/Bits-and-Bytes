@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">civicsync</string>
+    <string name="title_activity_main">civicsync</string>
+    <string name="package_name">com.civicsync.app</string>
+    <string name="custom_url_scheme">com.civicsync.app</string>
+</resources>

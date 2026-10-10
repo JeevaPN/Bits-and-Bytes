@@ -15,7 +15,7 @@ Open <http://localhost:3000>. Without Supabase environment values the public pag
 
 ## Environment
 
-Copy `.env.example` to `.env.local`. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from a Supabase project. `SUPABASE_SERVICE_ROLE_KEY` is server-only, must never use the `NEXT_PUBLIC_` prefix, and is not needed for the current UI. Do not commit environment files or real credentials.
+Copy `.env.example` to `.env.local`. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from a Supabase project. The exported app uses the browser Supabase client and stores sessions in browser local storage. The service role key is only used by local provisioning scripts and must never use the `NEXT_PUBLIC_` prefix. `NEXT_PUBLIC_CIVICSYNC_DEMO_PASSWORD` is included in the static bundle, so only use it with disposable demo accounts.
 
 ## Database
 
@@ -32,7 +32,7 @@ npm run build
 ## Vercel deployment
 
 1. Import the repository into Vercel and keep the Next.js framework preset.
-2. Set the public Supabase URL and anon key in the Vercel project environment. Add a service role key only if a reviewed server-only operation needs it.
+2. Set the public Supabase URL and anon key in the Vercel project environment. Configure Supabase Auth redirect URLs for the deployed static origin.
 3. Apply the database migration and set Supabase Auth redirect/site URLs for the deployed domain.
 4. Configure storage buckets, RLS, backups, and monitoring before accepting real user reports.
 5. Deploy a preview first, verify the public project URLs and QR destination on the intended domain, then promote to production.

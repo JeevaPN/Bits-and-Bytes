@@ -1,20 +1,45 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, ShieldCheck, Users } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/browser";
 import { getCurrentWorkspaceRole } from "@/lib/auth/authorization";
 import { WorkspacePageDeck } from "@/components/shared/workspace-page-deck";
+import type { Role } from "@/lib/domain/types";
 
-export default async function Home() {
-  const role = await getCurrentWorkspaceRole();
+type FeaturedProject = { id: string; slug: string; title: string; department: string; location: string; status: string; expected_end: string };
+
+export default function Home() {
+  const [role, setRole] = useState<Role | null>(null);
+  const [projects, setProjects] = useState<FeaturedProject[]>([]);
+  const [issueCount, setIssueCount] = useState(0);
+  const [groupCount, setGroupCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    async function loadHome() {
+      const currentRole = await getCurrentWorkspaceRole();
+      if (!active) return;
+      setRole(currentRole);
+      if (currentRole) return;
+      const client = createClient();
+      if (!client) return;
+      const [projectResult, issueResult, groupResult] = await Promise.all([
+        client.from("projects").select("id,slug,title,department,location,status,expected_end").eq("is_published", true).order("updated_at", { ascending: false }).limit(3),
+        client.from("public_issue_feed").select("id", { count: "exact", head: true }),
+        client.from("public_community_groups").select("id", { count: "exact", head: true }),
+      ]);
+      if (!active) return;
+      setProjects(projectResult.data ?? []);
+      setIssueCount(issueResult.count ?? 0);
+      setGroupCount(groupResult.count ?? 0);
+    }
+    void loadHome();
+    return () => { active = false; };
+  }, []);
+
   if (role) return <WorkspacePageDeck role={role} />;
-  const client = await createClient();
-  const [projectResult, issueResult, groupResult] = client ? await Promise.all([
-    client.from("projects").select("id,slug,title,department,location,status,expected_end").eq("is_published", true).order("updated_at", { ascending: false }).limit(3),
-    client.from("public_issue_feed").select("id", { count: "exact", head: true }),
-    client.from("public_community_groups").select("id", { count: "exact", head: true }),
-  ]) : [{ data: null, count: 0, error: null }, { data: null, count: 0, error: null }, { data: null, count: 0, error: null }];
-  const projects = projectResult.data ?? [];
 
   return (
     <main className="home-scroll-pages">
@@ -167,7 +192,7 @@ export default async function Home() {
           {projects.map((p, index) => (
             <Link
               className="card animate-fade-up"
-              href={`/projects/${p.slug}`}
+              href={`/projects/detail?slug=${encodeURIComponent(p.slug)}`}
               key={p.id}
               style={{
                 animationDelay: `${250 + (index * 100)}ms`,
@@ -247,12 +272,12 @@ export default async function Home() {
         />
         <Stat
           icon={<ShieldCheck size={20} />}
-          value={`${issueResult.count ?? 0} public reports`}
+          value={`${issueCount} public reports`}
           label="Community counts stay separate from official review"
         />
         <Stat
           icon={<Users size={20} />}
-          value={`${groupResult.count ?? 0} approved groups`}
+          value={`${groupCount} approved groups`}
           label="Local people working on local needs"
         />
       </section>

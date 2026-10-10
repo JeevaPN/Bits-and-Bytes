@@ -1,5 +1,3 @@
-import "server-only";
-
 export function getResendConfig() { const apiKey = process.env.RESEND_API_KEY; const from = process.env.RESEND_FROM_EMAIL; return apiKey && from ? { apiKey, from } : null; }
 /** Direct Resend use is reserved for non-auth transactional mail. Supabase Auth remains responsible for auth emails. */
 export async function sendTransactionalEmail(input: { to: string; subject: string; html: string }) { const config = getResendConfig(); if (!config) throw new Error("RESEND_NOT_CONFIGURED"); const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: config.from, to: [input.to], subject: input.subject, html: input.html }) }); if (!response.ok) throw new Error("RESEND_REQUEST_FAILED"); return await response.json() as { id?: string };

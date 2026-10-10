@@ -21,7 +21,10 @@ describe("development email/password authentication", () => {
     expect(actions).toContain("resetPasswordForEmail");
     expect(actions).toContain("display_name: parsed.data.displayName");
     expect(actions).toContain('z.enum(["common", "group"])');
-    expect(actions).toContain("admin role requires a trusted staff workflow");
+    expect(actions).toContain("Admin role requires a trusted staff workflow");
+    const signupTrigger = read("supabase/migrations/202610100006_signup_workspace.sql");
+    expect(signupTrigger).toContain("when new.raw_user_meta_data->>'requested_workspace' = 'group'");
+    expect(signupTrigger).toContain("else 'common'::public.app_role");
     expect(read("components/auth/auth-forms.tsx")).not.toContain('value="admin"');
     expect(read("app/auth/sign-up/page.tsx")).toContain("Admin access is provisioned separately");
     expect(read("docs/AUTH_DEVELOPMENT.md")).toContain("Confirm email");

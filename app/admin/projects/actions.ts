@@ -1,6 +1,6 @@
-"use server";
+"use client";
 
-import { requireAdmin } from "@/lib/supabase/admin-auth";
+import { requireAdmin } from "@/lib/auth/authorization";
 import type { CreateProjectInput } from "@/lib/domain/admin";
 
 export async function createProject(input: CreateProjectInput): Promise<{ ok: true; slug: string } | { ok: false; error: string }> {

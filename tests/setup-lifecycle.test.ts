@@ -47,13 +47,13 @@ describe("development lifecycle safety", () => {
     const verify = read("scripts/dev-verify.ps1");
     expect(verify).toContain("/api/health");
     expect(verify).toContain("CivicSync readiness: OK");
-    expect(read("app/api/health/route.ts")).toContain("missingRelations");
-    expect(read("app/api/health/route.ts")).toContain("relationErrors");
-    expect(read("app/api/health/route.ts")).toContain("publicMapReadModel");
-    expect(read("app/api/health/route.ts")).toContain("public_sponsorship_campaigns");
-    expect(read("app/api/health/route.ts")).toContain("public_community_groups");
-    expect(read("app/api/health/route.ts")).toContain("coordination_cases");
-    expect(read("app/api/health/route.ts")).toContain("restoration_inspections");
+    expect(read("app/_api/health/route.ts")).toContain("missingRelations");
+    expect(read("app/_api/health/route.ts")).toContain("relationErrors");
+    expect(read("app/_api/health/route.ts")).toContain("publicMapReadModel");
+    expect(read("app/_api/health/route.ts")).toContain("public_sponsorship_campaigns");
+    expect(read("app/_api/health/route.ts")).toContain("public_community_groups");
+    expect(read("app/_api/health/route.ts")).toContain("coordination_cases");
+    expect(read("app/_api/health/route.ts")).toContain("restoration_inspections");
     expect(read("scripts/dev-verify.ps1")).toContain("[ValidateSet('auto','local','remote-dev')]");
   });
 

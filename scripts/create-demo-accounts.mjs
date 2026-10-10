@@ -117,15 +117,15 @@ async function main() {
       throw new Error(`Saved role does not match ${account.label}.`);
     }
   }
-  // The one-click demo action reads this server-only setting. Keep credentials
-  // out of browser bundles and tracked source files.
+  // This shared credential is intentionally public and must only be used for
+  // disposable demo accounts.
   const envPath = path.resolve(".env");
   let envFile = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
-  const setting = `CIVICSYNC_DEMO_PASSWORD=${report.accounts[0].password}`;
-  if (/^[ \t]*CIVICSYNC_DEMO_PASSWORD[ \t]*=.*$/m.test(envFile)) {
-    envFile = envFile.replace(/^[ \t]*CIVICSYNC_DEMO_PASSWORD[ \t]*=.*$/m, setting);
+  const setting = `NEXT_PUBLIC_CIVICSYNC_DEMO_PASSWORD=${report.accounts[0].password}`;
+  if (/^[ \t]*NEXT_PUBLIC_CIVICSYNC_DEMO_PASSWORD[ \t]*=.*$/m.test(envFile)) {
+    envFile = envFile.replace(/^[ \t]*NEXT_PUBLIC_CIVICSYNC_DEMO_PASSWORD[ \t]*=.*$/m, setting);
   } else {
-    envFile += `\n# Server-only password for the three one-click demo accounts\n${setting}\n`;
+    envFile += `\n# Public shared password for disposable demo accounts\n${setting}\n`;
   }
   fs.writeFileSync(envPath, envFile);
   console.log("All three roles saved. Partner account owns an approved demo group.");

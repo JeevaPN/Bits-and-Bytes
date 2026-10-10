@@ -3,15 +3,25 @@ import Link from "next/link";
 import { IssueBrowser } from "@/components/neighbourhood/issue-browser";
 import { ProjectFollow } from "@/components/neighbourhood/project-follow";
 import { useEffect, useState } from "react";
-import type { Issue, Project } from "@/lib/domain/types";
+import type { Issue } from "@/lib/domain/types";
+import { listPublicIssues } from "@/lib/services/neighbourhood-server";
+import { createClient } from "@/lib/supabase/browser";
 
 export function NeighbourhoodDashboard() {
-  const [projects, setProjects] = useState<Project[]>([]); const [issues, setIssues] = useState<Issue[]>([]); const [error, setError] = useState("");
-  useEffect(() => { let active = true; Promise.all([fetch("/api/neighbourhood/projects", { cache: "no-store" }), fetch("/api/neighbourhood/issues?pageSize=50", { cache: "no-store" })]).then(async ([projectResponse, issueResponse]) => {
-    const [projectResult, issueResult] = await Promise.all([projectResponse.json(), issueResponse.json()]); if (!active) return;
-    if (projectResponse.ok && projectResult.ok) setProjects(projectResult.data ?? []); else setError(projectResult.error?.message ?? "Published projects are unavailable.");
-    if (issueResponse.ok && issueResult.ok) setIssues(issueResult.data?.items ?? []); else setError("Public reports are unavailable.");
-  }).catch(() => { if (active) setError("Neighbourhood data is unavailable."); }); return () => { active = false; }; }, []);
+  const [projects, setProjects] = useState<Array<{ id: string; title: string; department: string; description: string; location: string; status: string }>>([]); const [issues, setIssues] = useState<Issue[]>([]); const [error, setError] = useState("");
+  useEffect(() => { let active = true; async function load() {
+    const client = createClient();
+    if (!client) { setError("Neighbourhood data is unavailable because Supabase is not configured."); return; }
+    const [projectResult, issueResult] = await Promise.all([
+      client.from("projects").select("id,slug,title,description,department,location,status,planned_start,expected_end,is_published").eq("is_published", true).order("updated_at", { ascending: false }).limit(50),
+      listPublicIssues({ pageSize: 50 }),
+    ]);
+    if (!active) return;
+    if (projectResult.error) setError("Published projects are unavailable.");
+    else setProjects((projectResult.data ?? []).map((project) => ({ id: project.id, title: project.title, department: project.department, description: project.description, location: project.location, status: project.status })));
+    if (issueResult.ok) setIssues(issueResult.data.items);
+    else setError("Public reports are unavailable.");
+  } void load(); return () => { active = false; }; }, []);
   return <div className="container" style={{ paddingTop: 42 }}><div className="eyebrow">Neighbourhood</div><h1>Your neighbourhood space</h1><p style={{ color: "var(--muted)" }}>Follow local work, share what you see, and support community-led action.</p>
     {error && <p role="alert" className="card" style={{ color: "#a33" }}>{error}</p>}
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16, marginTop: 25 }}>
