@@ -15,13 +15,7 @@ export default function Home() {
         }}
       >
         <div
-          className="container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr .9fr",
-            gap: 54,
-            alignItems: "center",
-          }}
+          className="container home-hero-grid"
         >
           <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
             <div
@@ -37,18 +31,9 @@ export default function Home() {
               A clearer view of your neighbourhood
             </div>
             
-            <h1
-              style={{
-                fontSize: "clamp(42px,6vw,68px)",
-                lineHeight: 1.02,
-                letterSpacing: "-.035em",
-                maxWidth: 650,
-                margin: "18px 0",
-                color: "var(--text-primary)",
-              }}
-            >
-              The work around you,{" "}
-              <span style={{ color: "var(--accent)" }}>in the open.</span>
+            <h1 className="home-hero-title">
+              The work around you,
+              <span className="home-hero-accent">in the open.</span>
             </h1>
             <p
               style={{
@@ -158,8 +143,8 @@ export default function Home() {
             >
               The latest
             </div>
-            <h2 style={{ fontSize: 28, margin: "8px 0 0", color: "var(--text-primary)" }}>
-              Your city, in progress
+            <h2 className="home-section-title">
+              Your city, <span className="home-serif-accent">in progress</span>
             </h2>
           </div>
           <Link href="/projects" style={{ color: "var(--accent)", fontWeight: 500 }}>
@@ -292,8 +277,8 @@ export default function Home() {
             >
               Make your corner better
             </div>
-            <h2 style={{ fontSize: 24, margin: "8px 0", color: "var(--text-primary)" }}>
-              Notice something? Let’s get it on the map.
+            <h2 className="home-cta-title">
+              Notice something? <span className="home-serif-accent">Let’s get it on the map.</span>
             </h2>
             <p style={{ color: "var(--text-secondary)", margin: 0 }}>
               A clear report helps neighbours and civic teams understand what’s
