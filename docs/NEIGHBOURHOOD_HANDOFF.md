@@ -109,8 +109,8 @@ Environment seams are documented for Supabase Auth/database, Resend notification
 ### Implemented
 
 - Supabase SSR session refresh in `middleware.ts`, plus server-side `getServerUser`, `requireServerUser`, profile lookup, and centralized role checks.
-- Auth routes: `/auth/sign-up`, `/auth/sign-in`, `/auth/check-email`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/callback`, and `/auth/confirm`.
-- Accessible server-action forms for signup, signin, signout, recovery, reset, and confirmation resend. Auth error messages avoid account enumeration.
+- Auth routes: `/auth/sign-up`, `/auth/sign-in`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/callback`, and `/auth/confirm`.
+- Accessible server-action forms for email/password signup, signin, signout, recovery, and reset. Development signup does not require email OTP or confirmation; Auth error messages avoid account enumeration.
 - Authenticated header state with signout; public pages remain accessible.
 - Supabase production service boundary in `lib/services/neighbourhood-server.ts` for public issue reads, authenticated issue creation, verification, challenges, follows, task confirmations, and simulated pledges.
 - API handlers under `app/api/neighbourhood/` for public issue reads, authenticated writes, verification, challenges, and signed evidence-upload authorization.
@@ -120,8 +120,8 @@ Environment seams are documented for Supabase Auth/database, Resend notification
 
 ### Authentication configuration still required
 
-1. In Supabase Auth, set the local site URL to `http://localhost:3000` and add `/auth/callback` and `/auth/confirm` to the redirect allowlist. Set the production site URL and equivalent production redirects before deployment.
-2. Configure email confirmation and password recovery templates to point to the callback/confirmation routes.
+1. In Supabase Auth, set the local site URL to `http://localhost:3000`, disable **Confirm email** for development, and add `/auth/callback` and `/auth/confirm` to the redirect allowlist. Set the production site URL and equivalent production redirects before deployment.
+2. Keep password recovery configured; reconsider and re-enable email verification before public production launch.
 3. Verify a Resend sending domain, publish its SPF/DKIM/DMARC records, and configure Resend SMTP in Supabase Auth. `RESEND_API_KEY` is only for non-auth transactional mail and must remain server-only.
 4. Apply migrations in order, first `202610100001_core.sql`, then `202610100002_auth_neighbourhood_hardening.sql`, in a dedicated Supabase project. Do not run against production without review.
 5. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` only where a reviewed server operation requires it, `NEXT_PUBLIC_SITE_URL`, and the Cloudinary variables from `.env.example`. Never commit `.env.local`.
