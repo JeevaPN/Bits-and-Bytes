@@ -16,7 +16,7 @@ export interface ProjectQuery extends PageQuery { status?: ProjectStatus | "all"
 export interface IssueQuery extends PageQuery { category?: IssueCategory | "all"; reviewStatus?: OfficialReviewStatus | "all"; source?: IssueSource | "all"; urgent?: boolean | "all" }
 export interface PartnerQuery extends PageQuery { area?: string; capability?: IssueCategory | "all" }
 
-export interface CreateIssueInput { title: string; description: string; category: IssueCategory; location: string; latitude: number; longitude: number; observedAt: string; photo?: File | null }
+export interface CreateIssueInput { title: string; description: string; category: IssueCategory; location: string; latitude: number; longitude: number; observedAt: string; evidencePublicId?: string; photo?: File | null }
 export interface FlagIssueInput { issueId: string; reason: string; details?: string }
 export interface CreatePledgeInput { campaignId: string; amount: number; sponsorLabel?: string }
 export interface GroupApplicationInput { name: string; description: string; area: string; contact: string; capabilities: IssueCategory[]; limitations: string }

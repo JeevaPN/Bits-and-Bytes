@@ -1,6 +1,6 @@
 import "server-only";
 
-type Context = { requestId?: string; route?: string; userId?: string; operation?: string; code?: string };
+type Context = { requestId?: string; route?: string; userId?: string; operation?: string; code?: string; provider?: string; status?: number; detail?: string };
 
 function write(level: "info" | "warn" | "error", message: string, context: Context = {}) {
   // Deliberately structured and allow-listed: do not pass request bodies, headers, cookies, tokens, or provider responses.
